@@ -1,26 +1,114 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* PharmaClick Official Brand Palette */
+  --color-brand-deep: #064F68;
+  --color-brand-teal: #007F91;
+  --color-brand-turquoise: #00BFA5;
+  --color-brand-green: #00C853;
+  --color-brand-lime: #7CDE00;
+  --color-brand-white: #FFFFFF;
+
+  /* Official Brand Gradients */
+  --gradient-pharma: linear-gradient(135deg, #064F68 0%, #007F91 50%, #00BFA5 100%);
+  --gradient-click: linear-gradient(135deg, #00BFA5 0%, #00C853 50%, #7CDE00 100%);
+  --gradient-badge: linear-gradient(135deg, #00C853 0%, #7CDE00 100%);
+
+  /* UI Neutral Colors */
+  --bg-main: #f8fafc;
+  --bg-surface: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-subtle: #e2e8f0;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  --color-brand-deep: #064F68;
+  --color-brand-teal: #007F91;
+  --color-brand-turquoise: #00BFA5;
+  --color-brand-green: #00C853;
+  --color-brand-lime: #7CDE00;
+  --font-arabic: var(--font-ibm-plex-arabic);
+  --font-latin: var(--font-poppins);
+  --font-sans: var(--font-ibm-plex-arabic), var(--font-poppins), system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ibm-plex-arabic), var(--font-poppins), system-ui, sans-serif;
+}
+
+/* Custom Utilities for Gradients and Glassmorphism */
+.bg-gradient-pharma {
+  background: var(--gradient-pharma);
+}
+
+.bg-gradient-click {
+  background: var(--gradient-click);
+}
+
+.bg-gradient-badge {
+  background: var(--gradient-badge);
+}
+
+.text-gradient-pharma {
+  background: var(--gradient-pharma);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-click {
+  background: var(--gradient-click);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.card-hover-effect {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px rgba(6, 79, 104, 0.15);
+}
+
+/* Smooth Scrolling & Custom Scrollbar */
+html {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #007F91;
+}
+
+/* Hide scrollbar for clean category pills */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hero-glow-pharma {
+  background: radial-gradient(circle, rgba(0, 191, 165, 0.18) 0%, rgba(6, 79, 104, 0.05) 50%, transparent 70%);
 }
