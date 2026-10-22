@@ -1,5 +1,5 @@
-import MedicationInquiryPage from "../inquiry/page";
+import { redirect } from "next/navigation";
 
-export default function DrugInquiryAliasPage() {
-  return <MedicationInquiryPage />;
+export default function DrugInquiryPage() {
+  redirect("/contact");
 }

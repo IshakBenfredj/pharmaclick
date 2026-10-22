@@ -271,10 +271,10 @@ function SearchContent() {
                 <HelpCircle className="w-8 h-8" />
               </div>
               <h3 className="text-lg sm:text-xl font-black text-slate-800">
-                لم تعثر على المستحضر أو الدواء الذي تبحث عنه؟
+                لم تعثر على المستحضر الذي تبحث عنه؟
               </h3>
               <p className="text-slate-500 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
-                لا تقلق! يمكنك إرسال استفسار مباشر باسم الدواء أو صورته وسيقوم فريقنا الصحي بالتحقق الفوري من التوفر واقتراح البدائل المكافئة المعتمدة.
+                لا تقلق! يمكنك التواصل معنا مباشرة وسيقوم فريق الدعم بمساعدتك في العثور على ما تحتاجه وتوفيره لك بأسرع وقت.
               </p>
               <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                 <a
@@ -284,7 +284,7 @@ function SearchContent() {
                   className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-6 py-3 rounded-full shadow-md transition-all cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>استفسار مباشر عبر الواتساب</span>
+                  <span>تواصل معنا عبر الواتساب</span>
                 </a>
                 <button
                   type="button"
@@ -304,7 +304,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans" dir="rtl">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Header />
       <Suspense fallback={<div className="p-12 text-center text-slate-500">جاري تحميل نتائج البحث...</div>}>
         <SearchContent />

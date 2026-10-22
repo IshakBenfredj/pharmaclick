@@ -40,14 +40,26 @@ export type DynamicCriteriaType =
  * ```
  */
 export interface IMarketingSection extends Document {
-  /** عنوان القسم الترويجي الرئيسي */
+  /** عنوان القسم الترويجي الرئيسي بالعربية (إجباري) */
   title: string;
-  /** وصف توضيحي أو عنوان فرعي داعم */
+  /** عنوان القسم بالفرنسية (اختياري) */
+  titleFr?: string;
+  /** عنوان القسم بالإنجليزية (اختياري) */
+  titleEn?: string;
+  /** وصف توضيحي أو عنوان فرعي داعم بالعربية */
   subtitle?: string;
+  /** وصف فرعي بالفرنسية (اختياري) */
+  subtitleFr?: string;
+  /** وصف فرعي بالإنجليزية (اختياري) */
+  subtitleEn?: string;
   /** الرمز التعبيري المصاحب للعنوان (مثل '🔥', '🌿', '💎', '🏷️') */
   emoji?: string;
-  /** شارة نصية صغيرة تظهر فوق العنوان (مثل 'عروض حصرية' أو 'الأكثر طلباً') */
+  /** شارة نصية صغيرة بالعربية (مثل 'عروض حصرية' أو 'الأكثر طلباً') */
   badgeText?: string;
+  /** شارة نصية بالفرنسية (اختياري) */
+  badgeTextFr?: string;
+  /** شارة نصية بالإنجليزية (اختياري) */
+  badgeTextEn?: string;
   /** نوع الاختيار: 'manual' لقائمة محددة يدوياً، أو 'dynamic' وفق معايير آلية */
   selectionType: SectionSelectionType;
   /** معيار الاختيار الديناميكي (on_sale, featured, best_sellers, most_viewed, by_category) */
@@ -77,9 +89,30 @@ const MarketingSectionSchema = new Schema<IMarketingSection>(
       required: [true, 'عنوان القسم الترويجي مطلوب'],
       trim: true,
     },
+    titleFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    titleEn: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     subtitle: {
       type: String,
       trim: true,
+      default: '',
+    },
+    subtitleFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    subtitleEn: {
+      type: String,
+      trim: true,
+      default: '',
     },
     emoji: {
       type: String,
@@ -89,6 +122,17 @@ const MarketingSectionSchema = new Schema<IMarketingSection>(
     badgeText: {
       type: String,
       trim: true,
+      default: '',
+    },
+    badgeTextFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    badgeTextEn: {
+      type: String,
+      trim: true,
+      default: '',
     },
     selectionType: {
       type: String,
@@ -116,7 +160,7 @@ const MarketingSectionSchema = new Schema<IMarketingSection>(
       type: Number,
       default: 8,
       min: 1,
-      max: 24,
+      max: 100,
     },
     sortOrder: {
       type: Number,
@@ -152,19 +196,33 @@ MarketingSectionSchema.methods.getResolvedProducts = async function (): Promise<
       isOnlineVisible: true,
     }).populate('category', 'nameAr nameFr slug');
 
-    // Maintain the admin-curated order of products
+    // Maintain the admin-curated order of products - for manual selection it is OPEN (no limit slice)
     const productMap = new Map(
       foundProducts.map((p: any) => [p._id.toString(), p])
     );
     return this.products
       .map((id: any) => productMap.get(id.toString()))
-      .filter(Boolean)
-      .slice(0, this.limit || 8);
+      .filter(Boolean);
   }
 
   // Dynamic selection criteria
   const query: Record<string, any> = { isOnlineVisible: true, inStock: true };
   const sort: Record<string, any> = {};
+
+  // If a target category is specified, scope results to that category and its subcategories
+  if (this.targetCategory) {
+    try {
+      const Category = mongoose.models.Category || mongoose.model('Category');
+      const childCategories = await Category.find({ parentCategory: this.targetCategory }).select('_id');
+      const categoryScope = [this.targetCategory, ...childCategories.map((c: any) => c._id)];
+      query.$or = [
+        { category: { $in: categoryScope } },
+        { subCategory: { $in: categoryScope } },
+      ];
+    } catch {
+      query.category = this.targetCategory;
+    }
+  }
 
   switch (this.dynamicCriteria) {
     case 'on_sale':
@@ -182,19 +240,18 @@ MarketingSectionSchema.methods.getResolvedProducts = async function (): Promise<
       sort.viewCount = -1;
       break;
     case 'by_category':
-      if (this.targetCategory) {
-        query.category = this.targetCategory;
-      }
+      // Scoped above via targetCategory
       sort.createdAt = -1;
       break;
     default:
       sort.createdAt = -1;
   }
 
+  const queryLimit = this.limit && this.limit > 0 ? this.limit : 8;
   return await Product.find(query)
     .populate('category', 'nameAr nameFr slug')
     .sort(sort)
-    .limit(this.limit || 8);
+    .limit(queryLimit);
 };
 
 const MarketingSection: Model<IMarketingSection> =

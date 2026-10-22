@@ -9,8 +9,6 @@ export const ADMIN_PERMISSIONS = [
   'manage_brands',
   'manage_marketing',
   'manage_orders',
-  'manage_prescriptions',
-  'manage_inquiries',
   'manage_shipping',
   'manage_admins',
   'view_analytics',
@@ -22,7 +20,7 @@ export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
  * نموذج حسابات المسؤولين وفريق العمل (Admin Document)
  *
  * @description
- * يدير حسابات مسؤولي لوحة التحكم، المدراء، والمستشارين الصحيين ومسؤولي التجهيز.
+ * يدير حسابات مسؤولي لوحة التحكم، المدراء، وفريق إدارة المتجر والتجهيز.
  * يتضمن تجزئة وتشفير كلمات المرور عبر خوارزميات آمنة (scrypt)، مع إدارة الصلاحيات الدقيقة والأدوار.
  *
  * @example
@@ -31,7 +29,7 @@ export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
  *
  * // 1. إنشاء حساب مسؤول جديد (يتم تشفير كلمة المرور تلقائياً قبل الحفظ)
  * const admin = await Admin.create({
- *   fullName: 'د. ياسمين بوعلام',
+ *   fullName: 'ياسمين بوعلام',
  *   email: 'admin@pharmaclick.dz',
  *   password: 'SuperSecurePassword2026!',
  *   phone: '0555001122',
@@ -40,8 +38,7 @@ export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
  *     'manage_products',
  *     'manage_categories',
  *     'manage_orders',
- *     'manage_prescriptions',
- *     'manage_inquiries',
+ *     'manage_shipping',
  *     'view_analytics',
  *   ],
  *   isActive: true,
@@ -113,7 +110,7 @@ const AdminSchema = new Schema<IAdmin>(
     permissions: {
       type: [String],
       enum: ADMIN_PERMISSIONS,
-      default: ['view_analytics', 'manage_orders', 'manage_prescriptions', 'manage_inquiries'],
+      default: ['view_analytics', 'manage_orders'],
     },
     isActive: {
       type: Boolean,
@@ -149,7 +146,7 @@ export function verifyPassword(plainText: string, storedHash: string): boolean {
 }
 
 // Pre-save hook to hash password if modified
-AdminSchema.pre('save', function () {
+AdminSchema.pre('save', function (this: IAdmin) {
   if (!this.isModified('password')) return;
 
   // If password does not already contain our salt separator, hash it
@@ -160,6 +157,7 @@ AdminSchema.pre('save', function () {
 
 // Compare password instance method
 AdminSchema.methods.comparePassword = async function (
+  this: IAdmin,
   candidatePassword: string
 ): Promise<boolean> {
   return verifyPassword(candidatePassword, this.password);

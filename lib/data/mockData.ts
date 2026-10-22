@@ -10,13 +10,24 @@ export interface MockCategory {
   _id: string;
   nameAr: string;
   nameFr: string;
+  nameEn?: string;
   slug: string;
   icon: string;
   image: string;
   descriptionAr: string;
   descriptionFr: string;
+  descriptionEn?: string;
   productCount: number;
-  subCategories?: { nameAr: string; nameFr: string; slug: string }[];
+  subCategories?: {
+    nameAr: string;
+    nameFr: string;
+    nameEn?: string;
+    slug: string;
+    image?: string;
+    icon?: string;
+    descriptionAr?: string;
+    descriptionEn?: string;
+  }[];
 }
 
 export interface MockBrand {
@@ -32,12 +43,16 @@ export interface MockBrand {
 export interface MockProduct {
   _id: string;
   name: string;
+  nameAr?: string;
+  nameFr?: string;
+  nameEn?: string;
   slug: string;
   brand: string;
   brandId: string;
   category: string;
   categorySlug: string;
   subCategory?: string;
+  subCategorySlug?: string;
   price: number;
   originalPrice?: number;
   discountPercentage?: number;
@@ -49,7 +64,13 @@ export interface MockProduct {
   sizeOrVolume: string;
   variants?: { name: string; option: string; priceDelta: number; stockQuantity: number }[];
   description: string;
+  descriptionFr?: string;
+  descriptionEn?: string;
+  shortDescriptionFr?: string;
+  shortDescriptionEn?: string;
   usageInstructions: string;
+  usageInstructionsFr?: string;
+  usageInstructionsEn?: string;
   healthWarnings: string;
   isFeatured: boolean;
   isBestSeller?: boolean;
@@ -59,12 +80,20 @@ export interface MockProduct {
 export interface MockBanner {
   _id: string;
   title: string;
+  titleFr?: string;
+  titleEn?: string;
   subtitle: string;
+  subtitleFr?: string;
+  subtitleEn?: string;
   badgeText: string;
+  badgeTextFr?: string;
+  badgeTextEn?: string;
   imageUrlDesktop: string;
   imageUrlMobile: string;
   linkUrl: string;
   buttonText: string;
+  buttonTextFr?: string;
+  buttonTextEn?: string;
   accentColor: string;
 }
 
@@ -80,9 +109,27 @@ export const MOCK_CATEGORIES: MockCategory[] = [
     descriptionFr: "Produits certifiés pour hydrater et revitaliser tous types de peau.",
     productCount: 142,
     subCategories: [
-      { nameAr: "مرطبات وسيرومات", nameFr: "Sérums & Hydratants", slug: "serums-hydratants" },
-      { nameAr: "منظفات وغسول الوجه", nameFr: "Nettoyants Visage", slug: "nettoyants" },
-      { nameAr: "مكافحة التجاعيد والشيخوخة", nameFr: "Anti-Âge", slug: "anti-age" },
+      {
+        nameAr: "مرطبات وسيرومات",
+        nameFr: "Sérums & Hydratants",
+        slug: "serums-hydratants",
+        image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "سيرومات حمض الهيالورونيك والنياسيناميد وكريمات الترطيب العميق.",
+      },
+      {
+        nameAr: "منظفات وغسول الوجه",
+        nameFr: "Nettoyants Visage",
+        slug: "nettoyants",
+        image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "غسولات رغوية وجل منظف ومياه ميسيلار لإزالة الشوائب والدهون.",
+      },
+      {
+        nameAr: "مكافحة التجاعيد والشيخوخة",
+        nameFr: "Anti-Âge",
+        slug: "anti-age",
+        image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "مستحضرات الريتينول وفيتامين C لشد البشرة ومقاومة الخطوط التعبيرية.",
+      },
     ],
   },
   {
@@ -96,9 +143,27 @@ export const MOCK_CATEGORIES: MockCategory[] = [
     descriptionFr: "Haute protection SPF 50+ contre les UV et l'hyperpigmentation.",
     productCount: 48,
     subCategories: [
-      { nameAr: "كريمات حماية للبشرة الدهنية", nameFr: "Fluides Peau Grasse", slug: "fluides-solaires" },
-      { nameAr: "واقيات شمس ملونة", nameFr: "Solaires Teintés", slug: "solaires-teintes" },
-      { nameAr: "حماية شمسية للأطفال", nameFr: "Solaires Enfants", slug: "solaires-enfants" },
+      {
+        nameAr: "كريمات حماية للبشرة الدهنية",
+        nameFr: "Fluides Peau Grasse",
+        slug: "fluides-solaires",
+        image: "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "سوائل حماية بملمس غير لامع ومقاوم للمعان طوال اليوم.",
+      },
+      {
+        nameAr: "واقيات شمس ملونة",
+        nameFr: "Solaires Teintés",
+        slug: "solaires-teintes",
+        image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "حماية متكاملة مع تغطية طبيعية لتوحيد لون البشرة وإخفاء العيوب.",
+      },
+      {
+        nameAr: "حماية شمسية للأطفال",
+        nameFr: "Solaires Enfants",
+        slug: "solaires-enfants",
+        image: "https://images.unsplash.com/photo-1502741384106-56538427cde9?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "تركيبات فائقة التحمل ومقاومة للماء مخصصة لبشرة الصغار الحساسة.",
+      },
     ],
   },
   {
@@ -112,9 +177,27 @@ export const MOCK_CATEGORIES: MockCategory[] = [
     descriptionFr: "Traitements anti-chute et réparateurs pour des cheveux sains.",
     productCount: 86,
     subCategories: [
-      { nameAr: "علاج تساقط الشعر", nameFr: "Anti-Chute", slug: "anti-chute" },
-      { nameAr: "شامبو وبلسم علاجي", nameFr: "Shampoings Traitants", slug: "shampoings" },
-      { nameAr: "سيرومات وماسكات التغذية", nameFr: "Masques & Sérums", slug: "masques-cheveux" },
+      {
+        nameAr: "علاج تساقط الشعر",
+        nameFr: "Anti-Chute",
+        slug: "anti-chute",
+        image: "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "شامبوهات ومستحضرات موضعية منشطة للبصيلات للحد من التساقط.",
+      },
+      {
+        nameAr: "شامبو وبلسم علاجي",
+        nameFr: "Shampoings Traitants",
+        slug: "shampoings",
+        image: "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "حلول فعالة للقشرة والحكة واستعادة النعومة والترطيب.",
+      },
+      {
+        nameAr: "سيرومات وماسكات التغذية",
+        nameFr: "Masques & Sérums",
+        slug: "masques-cheveux",
+        image: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "ماسكات زيتية وبروتينية مكثفة لإصلاح ألياف الشعر المتقصف والتالف.",
+      },
     ],
   },
   {
@@ -128,9 +211,27 @@ export const MOCK_CATEGORIES: MockCategory[] = [
     descriptionFr: "Vitamines et minéraux certifiés pour stimuler votre vitalité.",
     productCount: 110,
     subCategories: [
-      { nameAr: "المناعة والنشاط", nameFr: "Immunité & Tonus", slug: "immunite-tonus" },
-      { nameAr: "أوميغا 3 والزيوت المفيدة", nameFr: "Oméga 3", slug: "omega-3" },
-      { nameAr: "صحة المفاصل والعظام", nameFr: "Articulations & Os", slug: "articulations" },
+      {
+        nameAr: "المناعة والنشاط",
+        nameFr: "Immunité & Tonus",
+        slug: "immunite-tonus",
+        image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "فيتامين C، زنك، ومقويات عامة لمقاومة التعب والإرهاق اليومي.",
+      },
+      {
+        nameAr: "أوميغا 3 والزيوت المفيدة",
+        nameFr: "Oméga 3",
+        slug: "omega-3",
+        image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "أحماض دهنية أساسية لدعم صحة القلب وتنشيط الذاكرة والتركيز.",
+      },
+      {
+        nameAr: "صحة المفاصل والعظام",
+        nameFr: "Articulations & Os",
+        slug: "articulations",
+        image: "https://images.unsplash.com/photo-1576075796033-848c2a5f3696?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "كالسيوم، فيتامين D3، وكولاجين لتقوية الغضاريف والمفاصل.",
+      },
     ],
   },
   {
@@ -144,9 +245,27 @@ export const MOCK_CATEGORIES: MockCategory[] = [
     descriptionFr: "Soins hypoallergéniques et alimentation adaptée pour nourrissons.",
     productCount: 75,
     subCategories: [
-      { nameAr: "نظافة ورعاية الرضيع", nameFr: "Hygiène Bébé", slug: "hygiene-bebe" },
-      { nameAr: "تغذية وحليب الأطفال", nameFr: "Alimentation Infantile", slug: "alimentation-bebe" },
-      { nameAr: "عناية الحامل والأمومة", nameFr: "Maternité", slug: "maternite" },
+      {
+        nameAr: "نظافة ورعاية الرضيع",
+        nameFr: "Hygiène Bébé",
+        slug: "hygiene-bebe",
+        image: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "شامبو أطفال خالي من الدموع وكريمات علاج ومنع طفح الحفاض.",
+      },
+      {
+        nameAr: "تغذية وحليب الأطفال",
+        nameFr: "Alimentation Infantile",
+        slug: "alimentation-bebe",
+        image: "https://images.unsplash.com/photo-1544816155-12df9643f363?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "حليب أطفال معتمد بمختلف المراحل العمرية ومكملات غذائية للنمو.",
+      },
+      {
+        nameAr: "عناية الحامل والأمومة",
+        nameFr: "Maternité",
+        slug: "maternite",
+        image: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "كريمات الوقاية من علامات التمدد ومستلزمات فترة الرضاعة الطبيعية.",
+      },
     ],
   },
   {
@@ -160,9 +279,27 @@ export const MOCK_CATEGORIES: MockCategory[] = [
     descriptionFr: "Tensiomètres, glucomètres et matériel de suivi à domicile.",
     productCount: 62,
     subCategories: [
-      { nameAr: "أجهزة قياس الضغط", nameFr: "Tensiomètres", slug: "tensiometres" },
-      { nameAr: "أجهزة فحص السكر والشرائط", nameFr: "Glucomètres", slug: "glucometres" },
-      { nameAr: "موازين الحرارة الرقمية", nameFr: "Thermomètres", slug: "thermometres" },
+      {
+        nameAr: "أجهزة فحص السكر والشرائط",
+        nameFr: "Glucomètres",
+        slug: "glucometers",
+        image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "أجهزة قياس السكر الفورية وشرائط فحص أصلية ومعقمة.",
+      },
+      {
+        nameAr: "أجهزة قياس ضغط الدم",
+        nameFr: "Tensiomètres",
+        slug: "tensiometers",
+        image: "https://images.unsplash.com/photo-1583912267670-6575ad362e4a?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "أجهزة قياس الضغط الإلكترونية للذراع والمعصم بدقة طبية معتمدة.",
+      },
+      {
+        nameAr: "موازين الحرارة الرقمية",
+        nameFr: "Thermomètres",
+        slug: "thermometers",
+        image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=500&auto=format&fit=crop&q=80",
+        descriptionAr: "موازين حرارة رقمية وبالأشعة تحت الحمراء بدون تلامس.",
+      },
     ],
   },
 ];
@@ -228,12 +365,16 @@ export const MOCK_PRODUCTS: MockProduct[] = [
   {
     _id: "prod-1",
     name: "سيروم حمض الهيالورونيك المرطب المركز Hyalu B5",
+    nameAr: "سيروم حمض الهيالورونيك المرطب المركز Hyalu B5",
+    nameFr: "Sérum Anti-Rides Hyalu B5 Concentré",
+    nameEn: "Hyalu B5 Pure Hyaluronic Acid Serum",
     slug: "hyalu-b5-serum",
     brand: "La Roche-Posay",
     brandId: "b-1",
     category: "العناية بالبشرة",
     categorySlug: "skincare",
     subCategory: "مرطبات وسيرومات",
+    subCategorySlug: "serums-hydratants",
     price: 3800,
     originalPrice: 4500,
     discountPercentage: 15,
@@ -251,6 +392,8 @@ export const MOCK_PRODUCTS: MockProduct[] = [
       { name: "الحجم", option: "50 مل", priceDelta: 1200, stockQuantity: 6 },
     ],
     description: "سيروم فائق الفعالية غني بحمض الهيالورونيك النقي ثنائي الجزيئات وفيتامين B5 وماديكاسوسايد لإصلاح حاجز البشرة الواقي وتعبئة الخطوط الدقيقة وتعزيز مرونة البشرة وترطيبها بعمق.",
+    descriptionFr: "Sérum dermatologique réparateur et repulpant à l'acide hyaluronique pur et vitamine B5.",
+    descriptionEn: "Dermatological repairing and replumping serum with pure hyaluronic acid and vitamin B5.",
     usageInstructions: "توضع 3 إلى 4 قطرات على الوجه والرقبة صباحاً ومساءً على بشرة نظيفة ورطبة قبل استخدام الكريم المرطب المعتاد.",
     healthWarnings: "للاستعمال الخارجي فقط. يحفظ بعيداً عن متناول الأطفال وتجنب ملامسة منطقة العينين مباشرة.",
     isFeatured: true,
@@ -260,12 +403,16 @@ export const MOCK_PRODUCTS: MockProduct[] = [
   {
     _id: "prod-2",
     name: "واقي شمس سائل فائق الحماية Oil Control SPF50+ خالي من اللمعان",
+    nameAr: "واقي شمس سائل فائق الحماية Oil Control SPF50+ خالي من اللمعان",
+    nameFr: "Fluide Solaire Anti-Brillance Oil Control SPF50+",
+    // Notice: nameEn is deliberately omitted to test fallback to Arabic when English is chosen!
     slug: "oil-control-spf50",
     brand: "Eucerin",
     brandId: "b-3",
     category: "واقيات الشمس",
     categorySlug: "sun-protection",
     subCategory: "كريمات حماية للبشرة الدهنية",
+    subCategorySlug: "fluides-solaires",
     price: 2950,
     originalPrice: 3500,
     discountPercentage: 16,
@@ -278,6 +425,7 @@ export const MOCK_PRODUCTS: MockProduct[] = [
     reviewsCount: 52,
     sizeOrVolume: "50 مل",
     description: "حماية فائقة من الأشعة فوق البنفسجية UVA/UVB والضوء المرئي عالي الطاقة مع تقنية تنظيم الإفرازات الدهنية بمفعول جاف ومقاوم للمعان يدوم حتى 8 ساعات كاملة للبشرة الدهنية والمعرضة لحب الشباب.",
+    descriptionFr: "Très haute protection solaire pour peau grasse à tendance acnéique avec effet anti-brillance 8h.",
     usageInstructions: "يوضع بسخاء على الوجه والرقبة قبل 20 دقيقة من التعرض للشمس، ويُعاد تطبيقه كل ساعتين أو بعد السباحة والتعرق الشديد.",
     healthWarnings: "التقليل من الكمية المطبقة يقلل بشكل ملحوظ من مستوى الحماية.",
     isFeatured: true,
@@ -287,12 +435,16 @@ export const MOCK_PRODUCTS: MockProduct[] = [
   {
     _id: "prod-3",
     name: "غسول رغوي منظف ومنقي للبشرة العادية إلى الدهنية مع 3 سيراميدات",
+    nameAr: "غسول رغوي منظف ومنقي للبشرة العادية إلى الدهنية مع 3 سيراميدات",
+    nameFr: "Gel Moussant Nettoyant Peaux Normales à Grasses",
+    nameEn: "Foaming Facial Cleanser for Normal to Oily Skin",
     slug: "foaming-facial-cleanser",
     brand: "CeraVe",
     brandId: "b-2",
     category: "العناية بالبشرة",
     categorySlug: "skincare",
     subCategory: "منظفات وغسول الوجه",
+    subCategorySlug: "nettoyants",
     price: 2600,
     images: [
       { url: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&auto=format&fit=crop&q=80", alt: "غسول سيرافي رغوي", isPrimary: true },
@@ -322,6 +474,7 @@ export const MOCK_PRODUCTS: MockProduct[] = [
     category: "الأجهزة والمعدات الطبية",
     categorySlug: "devices",
     subCategory: "أجهزة فحص السكر والشرائط",
+    subCategorySlug: "glucometers",
     price: 4900,
     originalPrice: 5800,
     discountPercentage: 15,
@@ -348,6 +501,7 @@ export const MOCK_PRODUCTS: MockProduct[] = [
     category: "الفيتامينات والمكملات",
     categorySlug: "vitamins",
     subCategory: "أوميغا 3 والزيوت المفيدة",
+    subCategorySlug: "omega-3",
     price: 2200,
     originalPrice: 2650,
     discountPercentage: 17,
@@ -374,6 +528,7 @@ export const MOCK_PRODUCTS: MockProduct[] = [
     category: "العناية بالبشرة",
     categorySlug: "skincare",
     subCategory: "منظفات وغسول الوجه",
+    subCategorySlug: "nettoyants",
     price: 2450,
     images: [
       { url: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&auto=format&fit=crop&q=80", alt: "ماء ميسيلار بايوديرما", isPrimary: true },
@@ -398,6 +553,7 @@ export const MOCK_PRODUCTS: MockProduct[] = [
     category: "العناية بالشعر",
     categorySlug: "haircare",
     subCategory: "علاج تساقط الشعر",
+    subCategorySlug: "anti-chute",
     price: 2850,
     originalPrice: 3300,
     discountPercentage: 14,
@@ -424,6 +580,7 @@ export const MOCK_PRODUCTS: MockProduct[] = [
     category: "العناية بالبشرة",
     categorySlug: "skincare",
     subCategory: "مرطبات وسيرومات",
+    subCategorySlug: "serums-hydratants",
     price: 2150,
     images: [
       { url: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=800&auto=format&fit=crop&q=80", alt: "سيكابلاست بلسم B5", isPrimary: true },
@@ -443,6 +600,57 @@ export const MOCK_PRODUCTS: MockProduct[] = [
     isFeatured: true,
     isBestSeller: true,
     tags: ["سيكابلاست", "ترميم", "تهيج", "لاروش", "أطفال"],
+  },
+  {
+    _id: "prod-9",
+    name: "لوشن مرطب يومي مهدئ للبشرة الحساسة والجافة جداً Lipikar Baume AP+M",
+    slug: "lipikar-baume-apm",
+    brand: "La Roche-Posay",
+    brandId: "b-1",
+    category: "العناية بالبشرة",
+    categorySlug: "skincare",
+    price: 3600,
+    originalPrice: 4200,
+    discountPercentage: 14,
+    images: [
+      { url: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&auto=format&fit=crop&q=80", alt: "ليبيكار بالم AP+M", isPrimary: true },
+    ],
+    inStock: true,
+    stockQuantity: 32,
+    rating: 4.9,
+    reviewsCount: 88,
+    sizeOrVolume: "400 مل",
+    description: "بلسم ترطيب ثلاثي المفعول مضاد للحكة ومضاد للانتكاس يهدئ على الفور البشرة شديدة الجفاف والمصابة بالأكزيما لكامل أفراد العائلة.",
+    usageInstructions: "يوضع مرة يومياً على بشرة نظيفة بعد الاستحمام على الجسم والوجه.",
+    healthWarnings: "للاستعمال الخارجي فقط.",
+    isFeatured: true,
+    isBestSeller: true,
+    tags: ["ليبيكار", "ترطيب", "بشرة جافة", "أكزيما", "لاروش"],
+  },
+  {
+    _id: "prod-10",
+    name: "بخاخ واقي شمس شفاف ومنعش SPF 50 Anthelios للجسم والوجه",
+    slug: "anthelios-transparent-spray-spf50",
+    brand: "La Roche-Posay",
+    brandId: "b-1",
+    category: "واقيات الشمس",
+    categorySlug: "sun-protection",
+    price: 3400,
+    originalPrice: 3900,
+    discountPercentage: 13,
+    images: [
+      { url: "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=800&auto=format&fit=crop&q=80", alt: "بخاخ أنثيليوس للجسم", isPrimary: true },
+    ],
+    inStock: true,
+    stockQuantity: 22,
+    rating: 4.8,
+    reviewsCount: 36,
+    sizeOrVolume: "200 مل",
+    description: "رذاذ شفاف غير مرئي وسريع الامتصاص يوفر حماية واسعة النطاق من أشعة الشمس ومقاوم للماء والتعرق.",
+    usageInstructions: "يرج جيداً قبل الاستخدام ويرش بسخاء وبشكل متساوٍ على بعد 20 سم من الجلد.",
+    healthWarnings: "لا يرش مباشرة على الوجه، يرش على راحة اليدين ثم يوزع على الوجه.",
+    isFeatured: true,
+    tags: ["بخاخ شمس", "أنثيليوس", "واقي شمس", "لاروش"],
   },
 ];
 
@@ -471,13 +679,13 @@ export const MOCK_BANNERS: MockBanner[] = [
   },
   {
     _id: "banner-3",
-    title: "خدمة التحضير المسبق للوصفات الطبية (Click & Collect)",
-    subtitle: "ارفع صورة وصفتك واستلم أدويتك جاهزة ومعبأة فور حضورك لمقرنا لتفادي الانتظار في الطابور",
-    badgeText: "استلام شخصي سريع",
-    imageUrlDesktop: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=1600&auto=format&fit=crop&q=85",
-    imageUrlMobile: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=800&auto=format&fit=crop&q=85",
-    linkUrl: "/prescription",
-    buttonText: "تجهيز وصفتي الآن",
+    title: "فيتامينات ومكملات غذائية أصلية لتعزيز طاقتك ومناعتك",
+    subtitle: "تشكيلة متكاملة من أجود المكملات والفيتامينات العالمية المعتمدة لصحة أفضل لك ولعائلتك",
+    badgeText: "صحة ونشاط دائم",
+    imageUrlDesktop: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=1600&auto=format&fit=crop&q=85",
+    imageUrlMobile: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=800&auto=format&fit=crop&q=85",
+    linkUrl: "/category/vitamins",
+    buttonText: "تسوق الفيتامينات والمكملات",
     accentColor: "from-brand-deep to-brand-turquoise",
   },
 ];

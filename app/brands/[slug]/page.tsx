@@ -24,7 +24,7 @@ export default async function BrandDetailPage({ params }: BrandDetailPageProps) 
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans" dir="rtl">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Header />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

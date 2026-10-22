@@ -1,144 +1,283 @@
 import React from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { ProductCard } from "@/components/ui/ProductCard";
+import { connectToDatabase } from "@/lib/mongodb";
+import { Category, Product } from "@/models";
 import { MOCK_CATEGORIES, MOCK_PRODUCTS } from "@/lib/data/mockData";
-import { ChevronLeft, Filter, SlidersHorizontal, ArrowUpDown } from "lucide-react";
+import {
+  CategoryViewClient,
+  CategoryDetailData,
+  CategoryProductItem,
+} from "@/components/category/CategoryViewClient";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ sub?: string }>;
 }
 
-export default async function CategoryDetailPage({ params }: CategoryPageProps) {
+export async function generateMetadata({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const category = MOCK_CATEGORIES.find((c) => c.slug === slug);
+  let categoryName = "القسم";
+  let description = "تصفح مستحضرات العناية والصحة المعتمدة في PharmaClick مع توصيل لكافة الـ 69 ولاية.";
 
-  if (!category) {
+  const mockCat = MOCK_CATEGORIES.find((c) => c.slug === slug);
+  if (mockCat) {
+    categoryName = mockCat.nameAr;
+    if (mockCat.descriptionAr) description = mockCat.descriptionAr;
+  }
+
+  return {
+    title: `${categoryName} | PharmaClick`,
+    description,
+  };
+}
+
+export default async function CategoryDetailPage({
+  params,
+  searchParams,
+}: CategoryPageProps) {
+  const { slug } = await params;
+  const search = searchParams ? await searchParams : {};
+  let autoSelectSub = search?.sub;
+
+  let categoryData: CategoryDetailData | null = null;
+  let childIds: any[] = [];
+  let childSlugs: string[] = [];
+  let childNames: string[] = [];
+
+  // 1. محاولة جلب التصنيف من MongoDB
+  if (process.env.MONGODB_URI) {
+    try {
+      await connectToDatabase();
+
+      let catDoc = await Category.findOne({ slug, isActive: { $ne: false } })
+        .populate("subCategories")
+        .lean();
+
+      // في حال كان الـ slug لقسم فرعي وليس رئيسياً
+      if (catDoc && catDoc.parentCategory) {
+        const parent = await Category.findById(catDoc.parentCategory)
+          .populate("subCategories")
+          .lean();
+        if (parent) {
+          autoSelectSub = catDoc.slug;
+          catDoc = parent;
+        }
+      }
+
+      if (catDoc) {
+        categoryData = {
+          _id: catDoc._id.toString(),
+          nameAr: catDoc.nameAr,
+          nameFr: catDoc.nameFr,
+          slug: catDoc.slug,
+          icon: catDoc.icon,
+          image: catDoc.image || "/images/default-cat.webp",
+          descriptionAr: catDoc.descriptionAr,
+          descriptionFr: catDoc.descriptionFr,
+          subCategories: (catDoc.subCategories || []).map((s: any) => ({
+            _id: s._id?.toString(),
+            nameAr: s.nameAr,
+            nameFr: s.nameFr,
+            slug: s.slug,
+            image: s.image,
+            descriptionAr: s.descriptionAr,
+          })),
+        };
+
+        childIds = (catDoc.subCategories || []).map((s: any) => s._id);
+        childSlugs = (categoryData.subCategories || []).map((s) => s.slug);
+        childNames = (categoryData.subCategories || []).map((s) => s.nameAr);
+      }
+    } catch (err) {
+      console.error("Error fetching category from MongoDB:", err);
+    }
+  }
+
+  // 2. بديل احتياطي من MOCK_CATEGORIES
+  if (!categoryData) {
+    const mockCat = MOCK_CATEGORIES.find((c) => c.slug === slug);
+    if (mockCat) {
+      categoryData = {
+        _id: mockCat._id,
+        nameAr: mockCat.nameAr,
+        nameFr: mockCat.nameFr,
+        slug: mockCat.slug,
+        icon: mockCat.icon,
+        image: mockCat.image,
+        descriptionAr: mockCat.descriptionAr,
+        descriptionFr: mockCat.descriptionFr,
+        subCategories: mockCat.subCategories || [],
+      };
+    } else {
+      // التحقق مما إذا كان slug لقسم فرعي
+      const parentWithSub = MOCK_CATEGORIES.find((c) =>
+        c.subCategories?.some((s) => s.slug === slug)
+      );
+      if (parentWithSub) {
+        autoSelectSub = slug;
+        categoryData = {
+          _id: parentWithSub._id,
+          nameAr: parentWithSub.nameAr,
+          nameFr: parentWithSub.nameFr,
+          slug: parentWithSub.slug,
+          icon: parentWithSub.icon,
+          image: parentWithSub.image,
+          descriptionAr: parentWithSub.descriptionAr,
+          descriptionFr: parentWithSub.descriptionFr,
+          subCategories: parentWithSub.subCategories || [],
+        };
+      }
+    }
+
+    if (categoryData) {
+      childSlugs = (categoryData.subCategories || []).map((s) => s.slug);
+      childNames = (categoryData.subCategories || []).map((s) => s.nameAr);
+    }
+  }
+
+  if (!categoryData) {
     notFound();
   }
 
-  // Filter products belonging to this category
-  const products = MOCK_PRODUCTS.filter((p) => p.categorySlug === slug);
+  // 3. جلب كافة منتجات الفئة الأب + منتجات كافة الأبناء معاً
+  let productsList: CategoryProductItem[] = [];
+
+  if (process.env.MONGODB_URI) {
+    try {
+      await connectToDatabase();
+
+      const queryConditions: any[] = [
+        { categorySlug: categoryData.slug },
+        { category: categoryData._id },
+      ];
+
+      if (childIds.length > 0) {
+        queryConditions.push({ subCategory: { $in: childIds } });
+        queryConditions.push({ category: { $in: childIds } });
+      }
+
+      if (childSlugs.length > 0) {
+        queryConditions.push({ subCategorySlug: { $in: childSlugs } });
+      }
+
+      const dbProds = await Product.find({
+        $or: queryConditions,
+        isOnlineVisible: { $ne: false },
+      })
+        .populate("category", "nameAr nameFr slug")
+        .populate("subCategory", "nameAr nameFr slug image")
+        .populate("brand", "name logoUrl")
+        .sort({ orderCount: -1, createdAt: -1 })
+        .lean();
+
+      if (dbProds && dbProds.length > 0) {
+        productsList = dbProds.map((p: any) => {
+          const subCatSlug =
+            p.subCategory?.slug || p.subCategorySlug || "";
+          const subCatName =
+            p.subCategory?.nameAr ||
+            (typeof p.subCategory === "string" ? p.subCategory : "");
+
+          const isChild =
+            childSlugs.includes(subCatSlug) ||
+            childNames.includes(subCatName);
+
+          const isDirectParent = !isChild || !subCatSlug;
+
+          return {
+            _id: p._id.toString(),
+            name: p.name,
+            nameAr: p.nameAr || p.name,
+            nameFr: p.nameFr || "",
+            nameEn: p.nameEn || "",
+            slug: p.slug,
+            brand:
+              p.brand?.name ||
+              (typeof p.brand === "string" ? p.brand : "PharmaClick"),
+            price: p.price,
+            originalPrice: p.originalPrice,
+            discountPercentage: p.discountPercentage,
+            image: p.images?.[0]?.url || "/images/default-prod.webp",
+            images: p.images || [],
+            category:
+              p.category?.nameAr ||
+              (typeof p.category === "string"
+                ? p.category
+                : categoryData!.nameAr),
+            categorySlug: p.category?.slug || categoryData!.slug,
+            subCategory: subCatName || undefined,
+            subCategorySlug: subCatSlug || undefined,
+            isDirectParent,
+            inStock: p.inStock,
+            sizeOrVolume:
+              p.shortDescription || p.sizeOrVolume || "",
+            isBestSeller: p.isBestSeller,
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching category products from MongoDB:", err);
+    }
+  }
+
+  // 4. استكمال / دمج مع MOCK_PRODUCTS لضمان عرض كامل وغني دائماً
+  const mockProds = MOCK_PRODUCTS.filter((p) => {
+    const matchesParent = p.categorySlug === categoryData!.slug;
+    const matchesChildSlug =
+      p.subCategorySlug && childSlugs.includes(p.subCategorySlug);
+    const matchesChildName =
+      p.subCategory && childNames.includes(p.subCategory);
+    return matchesParent || matchesChildSlug || matchesChildName;
+  });
+
+  for (const mp of mockProds) {
+    const alreadyExists = productsList.some(
+      (item) => item.slug === mp.slug || item._id === mp._id
+    );
+    if (!alreadyExists) {
+      const isChild =
+        (mp.subCategorySlug && childSlugs.includes(mp.subCategorySlug)) ||
+        (mp.subCategory && childNames.includes(mp.subCategory));
+
+      const isDirectParent = !isChild || !mp.subCategorySlug;
+
+      productsList.push({
+        _id: mp._id,
+        name: mp.name,
+        nameAr: mp.nameAr || mp.name,
+        nameFr: mp.nameFr || "",
+        nameEn: mp.nameEn || "",
+        slug: mp.slug,
+        brand: mp.brand,
+        price: mp.price,
+        originalPrice: mp.originalPrice,
+        discountPercentage: mp.discountPercentage,
+        image: mp.images?.[0]?.url || "",
+        images: mp.images,
+        category: mp.category,
+        categorySlug: mp.categorySlug,
+        subCategory: mp.subCategory,
+        subCategorySlug: mp.subCategorySlug,
+        isDirectParent,
+        inStock: mp.inStock,
+        sizeOrVolume: mp.sizeOrVolume,
+        isBestSeller: mp.isBestSeller,
+      });
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans" dir="rtl">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-        {/* مسار التنقل (Breadcrumbs) */}
-        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-          <Link href="/" className="hover:text-brand-deep transition-colors">
-            الرئيسية
-          </Link>
-          <ChevronLeft className="w-3.5 h-3.5 text-slate-400" />
-          <Link href="/categories" className="hover:text-brand-deep transition-colors">
-            التصنيفات
-          </Link>
-          <ChevronLeft className="w-3.5 h-3.5 text-slate-400" />
-          <span className="font-bold text-brand-deep">{category.nameAr}</span>
-        </div>
-
-        {/* رأس القسم */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="max-w-2xl text-right">
-            <span className="text-xs font-bold text-brand-teal mb-1 block font-mono">
-              {category.nameFr}
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
-              {category.nameAr}
-            </h1>
-            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-4">
-              {category.descriptionAr}
-            </p>
-
-            {/* الفئات الفرعية المتاحة */}
-            {category.subCategories && (
-              <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-                <span className="text-xs font-bold text-slate-400 self-center">
-                  الأقسام الفرعية:
-                </span>
-                {category.subCategories.map((sub, idx) => (
-                  <span
-                    key={idx}
-                    className="bg-slate-100 text-slate-700 text-xs px-3 py-1 rounded-full font-medium"
-                  >
-                    {sub.nameAr}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="w-32 h-32 rounded-2xl overflow-hidden shrink-0 border border-slate-100 shadow-inner">
-            <img
-              src={category.image}
-              alt={category.nameAr}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-
-        {/* شريط الإحصاء والفرز */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
-            <span>عدد المستحضرات المتاحة:</span>
-            <span className="bg-teal-50 text-brand-teal px-2.5 py-1 rounded-full">
-              {products.length} مستحضر
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400 flex items-center gap-1">
-              <ArrowUpDown className="w-3.5 h-3.5" />
-              <span>ترتيب حسب:</span>
-            </span>
-            <select className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 font-bold text-slate-700 focus:outline-none focus:border-brand-teal">
-              <option>الأكثر طلباً</option>
-              <option>السعر: من الأقل للأعلى</option>
-              <option>السعر: من الأعلى للأقل</option>
-              <option>الأعلى تقييماً</option>
-            </select>
-          </div>
-        </div>
-
-        {/* شبكة المنتجات */}
-        {products.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {products.map((p) => (
-              <ProductCard
-                key={p._id}
-                product={{
-                  _id: p._id,
-                  name: p.name,
-                  slug: p.slug,
-                  brand: p.brand,
-                  price: p.price,
-                  originalPrice: p.originalPrice,
-                  discountPercentage: p.discountPercentage,
-                  image: p.images[0]?.url || "",
-                  category: p.category,
-                  inStock: p.inStock,
-                  sizeOrVolume: p.sizeOrVolume,
-                }}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white rounded-3xl p-12 text-center border border-slate-100 my-8">
-            <p className="text-slate-500 text-sm mb-4">
-              لا توجد مستحضرات معروضة حالياً في هذا القسم.
-            </p>
-            <Link
-              href="/categories"
-              className="inline-flex items-center gap-2 text-xs font-bold bg-brand-deep text-white px-5 py-2.5 rounded-full hover:bg-brand-teal transition-colors"
-            >
-              <span>العودة لكافة الأقسام</span>
-              <ChevronLeft className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <CategoryViewClient
+          category={categoryData}
+          initialProducts={productsList}
+          initialSubSlug={autoSelectSub}
+        />
       </main>
 
       <Footer />

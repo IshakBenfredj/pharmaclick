@@ -37,18 +37,36 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
  * ```
  */
 export interface IBanner extends Document {
-  /** العنوان الرئيسي للافتة */
+  /** العنوان الرئيسي للافتة بالعربية (إجباري) */
   title: string;
-  /** وصف فرعي أو نص تشويقي */
+  /** العنوان بالفرنسية (اختياري) */
+  titleFr?: string;
+  /** العنوان بالإنجليزية (اختياري) */
+  titleEn?: string;
+  /** وصف فرعي أو نص تشويقي بالعربية */
   subtitle?: string;
+  /** وصف فرعي بالفرنسية (اختياري) */
+  subtitleFr?: string;
+  /** وصف فرعي بالإنجليزية (اختياري) */
+  subtitleEn?: string;
+  /** نص الشارة الترويجية بالعربية (مثل تخفيضات حصرية) */
+  badgeText?: string;
+  /** نص الشارة بالفرنسية (اختياري) */
+  badgeTextFr?: string;
+  /** نص الشارة بالإنجليزية (اختياري) */
+  badgeTextEn?: string;
   /** رابط الصورة عريضة الدقة المخصصة لشاشات الحواسيب والأجهزة اللوحية */
   imageUrlDesktop: string;
   /** رابط الصورة الرأسية المخصصة لشاشات الهواتف المحمولة */
-  imageUrlMobile: string;
+  imageUrlMobile?: string;
   /** رابط التوجيه عند النقر (داخلي مثل /category/haircare أو خارجي) */
   linkUrl: string;
-  /** النص المكتوب داخل زر التفاعل (CTA) مثل "اكتشف الآن" */
+  /** النص المكتوب داخل زر التفاعل (CTA) بالعربية */
   buttonText?: string;
+  /** نص زر التفاعل بالفرنسية (اختياري) */
+  buttonTextFr?: string;
+  /** نص زر التفاعل بالإنجليزية (اختياري) */
+  buttonTextEn?: string;
   /** ترتيب عرض اللافتة في السلايدر المنزلق */
   sortOrder: number;
   /** تاريخ بداية سريان الحملة الإعلانية (اختياري) */
@@ -68,9 +86,30 @@ const BannerSchema = new Schema<IBanner>(
       required: [true, 'عنوان اللافتة الإعلانية مطلوب'],
       trim: true,
     },
+    titleFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    titleEn: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     subtitle: {
       type: String,
       trim: true,
+      default: '',
+    },
+    subtitleFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    subtitleEn: {
+      type: String,
+      trim: true,
+      default: '',
     },
     imageUrlDesktop: {
       type: String,
@@ -79,8 +118,23 @@ const BannerSchema = new Schema<IBanner>(
     },
     imageUrlMobile: {
       type: String,
-      required: [true, 'صورة الموبايل مطلوبة'],
       trim: true,
+      default: '',
+    },
+    badgeText: {
+      type: String,
+      trim: true,
+      default: 'عرض حصري',
+    },
+    badgeTextFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    badgeTextEn: {
+      type: String,
+      trim: true,
+      default: '',
     },
     linkUrl: {
       type: String,
@@ -91,6 +145,16 @@ const BannerSchema = new Schema<IBanner>(
       type: String,
       default: 'اكتشف الآن',
       trim: true,
+    },
+    buttonTextFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    buttonTextEn: {
+      type: String,
+      trim: true,
+      default: '',
     },
     sortOrder: {
       type: Number,

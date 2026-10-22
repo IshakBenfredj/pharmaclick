@@ -85,3 +85,27 @@ export const ALGERIA_WILAYAS: WilayaData[] = [
 ];
 
 export const TOTAL_ALGERIA_WILAYAS = 69;
+
+export function getWilayaByCode(code: number): WilayaData | undefined {
+  return ALGERIA_WILAYAS.find((w) => w.code === Number(code));
+}
+
+export function calculateShippingFee(
+  wilayaCode: number,
+  deliveryType: 'home' | 'desk',
+  subtotal: number,
+  freeShippingConfig?: { isEnabled?: boolean; threshold?: number }
+): number {
+  if (
+    freeShippingConfig?.isEnabled &&
+    typeof freeShippingConfig.threshold === 'number' &&
+    freeShippingConfig.threshold > 0 &&
+    subtotal >= freeShippingConfig.threshold
+  ) {
+    return 0;
+  }
+  const wilaya = getWilayaByCode(wilayaCode);
+  if (!wilaya) return deliveryType === 'desk' ? 400 : 600;
+  return deliveryType === 'desk' ? wilaya.defaultDeskFee : wilaya.defaultHomeFee;
+}
+

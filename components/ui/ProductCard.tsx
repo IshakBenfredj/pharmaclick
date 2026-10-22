@@ -4,10 +4,15 @@ import React from 'react';
 import Link from 'next/link';
 import { ShoppingBag, Eye, Heart } from 'lucide-react';
 import { Badge } from './Badge';
+import { useCart } from '@/context/CartContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export interface ProductData {
   _id: string;
   name: string;
+  nameAr?: string;
+  nameFr?: string;
+  nameEn?: string;
   slug?: string;
   brand: string;
   price: number;
@@ -25,6 +30,27 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
+  const { addItem } = useCart();
+  const { getLocalized, t } = useLanguage();
+
+  const displayName = getLocalized(product, 'name') || product.name;
+
+  const handleAdd = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart(product);
+    } else {
+      addItem({
+        productId: product._id,
+        name: displayName,
+        slug: product.slug || product._id,
+        image: product.image,
+        price: product.price,
+        originalPrice: product.originalPrice,
+      });
+    }
+  };
   const hasDiscount =
     Boolean(product.originalPrice && product.originalPrice > product.price) ||
     Boolean(product.discountPercentage && product.discountPercentage > 0);
@@ -45,7 +71,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
         <div className="absolute top-3 right-3 left-3 flex items-center justify-between z-10 pointer-events-none">
           {hasDiscount ? (
             <span className="bg-brand-green text-white text-[10px] font-black px-2.5 py-1 rounded-md shadow-md tracking-tight backdrop-blur-xs">
-              خصم {discountVal}%
+              {t('discount') || 'خصم'} {discountVal}%
             </span>
           ) : (
             <span />
@@ -53,7 +79,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
 
           {!product.inStock && (
             <span className="bg-slate-900/85 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow-md">
-              غير متوفر
+              {t('outOfStock') || 'غير متوفر'}
             </span>
           )}
         </div>
@@ -65,7 +91,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
         >
           <img
             src={product.image}
-            alt={product.name}
+            alt={displayName}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
             loading="lazy"
           />
@@ -93,7 +119,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
           {/* اسم المنتج */}
           <Link href={productUrl}>
             <h3 className="text-xs sm:text-sm font-bold text-slate-800 line-clamp-2 hover:text-brand-deep transition-colors leading-snug mb-2 min-h-8">
-              {product.name}
+              {displayName}
             </h3>
           </Link>
         </div>
@@ -105,27 +131,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
               <span className="text-base sm:text-lg font-black text-brand-deep tracking-tight">
                 {product.price.toLocaleString()}
               </span>
-              <span className="text-[10px] font-bold text-slate-500">د.ج</span>
+              <span className="text-[10px] font-bold text-slate-500">{t('currency') || 'د.ج'}</span>
             </div>
 
             {hasDiscount && product.originalPrice && (
               <span className="text-[11px] text-slate-400 line-through block font-medium">
-                {product.originalPrice.toLocaleString()} د.ج
+                {product.originalPrice.toLocaleString()} {t('currency') || 'د.ج'}
               </span>
             )}
           </div>
 
           {/* زر السلة الدائري */}
           <button
-            onClick={() => onAddToCart && onAddToCart(product)}
+            onClick={handleAdd}
             disabled={!product.inStock}
             className={`w-9 h-9 rounded-full font-bold flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xs ${
               product.inStock
                 ? 'bg-brand-green hover:bg-[#00B048] text-white hover:scale-110 active:scale-95 hover:shadow-md'
                 : 'bg-slate-100 text-slate-400 cursor-not-allowed'
             }`}
-            title="أضف إلى السلة"
-            aria-label="أضف إلى السلة"
+            title={t('addToCart') || 'أضف إلى السلة'}
+            aria-label={t('addToCart') || 'أضف إلى السلة'}
           >
             <ShoppingBag className="w-4 h-4" />
           </button>

@@ -72,14 +72,32 @@ export interface IProductImage {
  * ```
  */
 export interface IProduct extends Document {
-  /** اسم المستحضر التجاري الكامل */
+  /** اسم المستحضر التجاري الكامل بالعربية (إجباري) */
   name: string;
+  /** اسم المستحضر بالعربية */
+  nameAr?: string;
+  /** اسم المستحضر بالفرنسية (اختياري) */
+  nameFr?: string;
+  /** اسم المستحضر بالإنجليزية (اختياري) */
+  nameEn?: string;
   /** المعرف اللطيف في الروابط (URL-friendly slug) */
   slug: string;
-  /** الوصف التفصيلي والفوائد والمكونات */
+  /** الوصف التفصيلي والفوائد والمكونات بالعربية (إجباري) */
   description: string;
-  /** نبذة وصفية سريعة تظهر في بطاقات العرض */
+  /** الوصف بالعربية */
+  descriptionAr?: string;
+  /** الوصف بالفرنسية (اختياري) */
+  descriptionFr?: string;
+  /** الوصف بالإنجليزية (اختياري) */
+  descriptionEn?: string;
+  /** نبذة وصفية سريعة تظهر في بطاقات العرض بالعربية */ 
   shortDescription?: string;
+  /** نبذة وصفية بالعربية */
+  shortDescriptionAr?: string;
+  /** نبذة وصفية بالفرنسية (اختياري) */
+  shortDescriptionFr?: string;
+  /** نبذة وصفية بالإنجليزية (اختياري) */
+  shortDescriptionEn?: string;
   /** السعر الفعلي الحالي للبيع بالدينار الجزائري (DZD) */
   price: number;
   /** السعر الأصلي قبل التخفيض إن وجد عرض خاص */
@@ -89,9 +107,9 @@ export interface IProduct extends Document {
   /** المعرف المرجعي للتصنيف الأساسي */
   category: mongoose.Types.ObjectId;
   /** المعرف المرجعي للتصنيف الفرعي إن وُجد */
-  subCategory?: mongoose.Types.ObjectId;
+  subCategory?: mongoose.Types.ObjectId | null;
   /** المعرف المرجعي للعلامة التجارية */
-  brand?: mongoose.Types.ObjectId;
+  brand?: mongoose.Types.ObjectId | null;
   /** مصفوفة صور المستحضر */
   images: IProductImage[];
   /** حالة التوفر الفوري للشراء */
@@ -100,10 +118,18 @@ export interface IProduct extends Document {
   stockQuantity: number;
   /** خيارات الأحجام أو التراكيز المتوفرة */
   variants: IProductVariant[];
-  /** إرشادات وتوجيهات الاستخدام الآمن */
+  /** إرشادات وتوجيهات الاستخدام الآمن بالعربية */
   usageInstructions?: string;
-  /** التحذيرات الصحية وموانع الاستعمال */
+  /** إرشادات الاستخدام بالفرنسية (اختياري) */
+  usageInstructionsFr?: string;
+  /** إرشادات الاستخدام بالإنجليزية (اختياري) */
+  usageInstructionsEn?: string;
+  /** التحذيرات الصحية وموانع الاستعمال بالعربية */
   healthWarnings?: string;
+  /** التحذيرات الصحية وموانع الاستعمال بالفرنسية (اختياري) */
+  healthWarningsFr?: string;
+  /** التحذيرات الصحية وموانع الاستعمال بالإنجليزية (اختياري) */
+  healthWarningsEn?: string;
   /** هل المستحضر مميز ليظهر في الواجهة الرئيسية */
   isFeatured: boolean;
   /** هل المستحضر متاح للعرض والشراء أونلاين */
@@ -150,6 +176,20 @@ const ProductSchema = new Schema<IProduct>(
       trim: true,
       index: true,
     },
+    nameAr: {
+      type: String,
+      trim: true,
+    },
+    nameFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    nameEn: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     slug: {
       type: String,
       required: [true, 'المعرف اللطيف (Slug) مطلوب'],
@@ -163,9 +203,37 @@ const ProductSchema = new Schema<IProduct>(
       required: [true, 'وصف المستحضر مطلوب'],
       trim: true,
     },
+    descriptionAr: {
+      type: String,
+      trim: true,
+    },
+    descriptionFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    descriptionEn: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     shortDescription: {
       type: String,
       trim: true,
+    },
+    shortDescriptionAr: {
+      type: String,
+      trim: true,
+    },
+    shortDescriptionFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    shortDescriptionEn: {
+      type: String,
+      trim: true,
+      default: '',
     },
     price: {
       type: Number,
@@ -224,10 +292,32 @@ const ProductSchema = new Schema<IProduct>(
     usageInstructions: {
       type: String,
       trim: true,
+      default: '',
+    },
+    usageInstructionsFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    usageInstructionsEn: {
+      type: String,
+      trim: true,
+      default: '',
     },
     healthWarnings: {
       type: String,
       trim: true,
+      default: '',
+    },
+    healthWarningsFr: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    healthWarningsEn: {
+      type: String,
+      trim: true,
+      default: '',
     },
     isFeatured: {
       type: Boolean,

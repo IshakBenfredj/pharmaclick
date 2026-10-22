@@ -136,4 +136,36 @@ const ShippingSetting: IShippingSettingModel =
   (mongoose.models.ShippingSetting as IShippingSettingModel) ||
   mongoose.model<IShippingSetting, IShippingSettingModel>('ShippingSetting', ShippingSettingSchema);
 
+/**
+ * نموذج إعدادات الشحن العامة (Global Shipping Configuration)
+ * يتيح للمسؤول (المدير) تفعيل أو تعطيل التوصيل المجاني واختيار المبلغ الذي يصبح به التوصيل مجاني
+ */
+export interface IGlobalShippingConfig extends Document {
+  isFreeShippingEnabled: boolean;
+  freeShippingThreshold: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const GlobalShippingConfigSchema = new Schema<IGlobalShippingConfig>(
+  {
+    isFreeShippingEnabled: {
+      type: Boolean,
+      default: false, // افتراضياً معطل حتى يفعله المدير
+    },
+    freeShippingThreshold: {
+      type: Number,
+      default: 10000,
+      min: 0,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export const GlobalShippingConfig: Model<IGlobalShippingConfig> =
+  (mongoose.models.GlobalShippingConfig as Model<IGlobalShippingConfig>) ||
+  mongoose.model<IGlobalShippingConfig>('GlobalShippingConfig', GlobalShippingConfigSchema);
+
 export default ShippingSetting;

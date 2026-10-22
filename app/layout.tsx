@@ -30,13 +30,17 @@ export const metadata: Metadata = {
     template: "%s | PharmaClick",
   },
   description:
-    "منصتك الرقمية الأولى للتسوق الصحي، العناية بالبشرة، المكملات الغذائية، وطلب تحضير الوصفات الطبية مسبقاً مع خدمة التوصيل لكافة الـ 69 ولاية.",
+    "منصتك الرقمية الأولى للتسوق الصحي، العناية بالبشرة، المكملات الغذائية، ومستحضرات الجمال المعتمدة مع خدمة التوصيل السريع لكافة الـ 69 ولاية.",
   manifest: "/manifest.json",
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",
   },
 };
+
+import { LanguageProvider } from "@/context/LanguageContext";
+import { CartProvider } from "@/context/CartContext";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 
 export default function RootLayout({
   children,
@@ -97,7 +101,12 @@ export default function RootLayout({
         suppressHydrationWarning
         className="min-h-full flex flex-col font-sans bg-[#f8fafc] text-[#0f172a]"
       >
-        {children}
+        <LanguageProvider>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+          </CartProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

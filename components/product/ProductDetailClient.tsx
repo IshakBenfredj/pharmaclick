@@ -4,8 +4,11 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { MockProduct } from "@/lib/data/mockData";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { useCart } from "@/context/CartContext";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   ChevronLeft,
+  ChevronRight,
   Truck,
   ShieldCheck,
   CheckCircle2,
@@ -30,6 +33,8 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
   product,
   relatedProducts,
 }) => {
+  const { addItem } = useCart();
+  const { getLocalized, t, direction } = useLanguage();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -38,6 +43,10 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
   );
   const [copiedLink, setCopiedLink] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+
+  const productName = getLocalized(product, 'name') || product.name;
+  const productDescription = getLocalized(product, 'description') || product.description;
+  const productUsage = getLocalized(product, 'usageInstructions') || product.usageInstructions;
 
   const selectedVariant = product.variants?.[selectedVariantIndex];
   const finalPrice = product.price + (selectedVariant?.priceDelta || 0);
@@ -59,9 +68,33 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
   };
 
   const handleAddToCart = () => {
+    const imageUrl =
+      typeof product.images?.[0] === "string"
+        ? product.images[0]
+        : (product.images?.[0] as any)?.url || "";
+
+    const variantLabel = selectedVariant
+      ? `${selectedVariant.name || "الخيار"}: ${selectedVariant.option}`
+      : undefined;
+
+    addItem(
+      {
+        productId: product._id || (product as any).id,
+        name: productName,
+        slug: product.slug,
+        image: imageUrl,
+        price: finalPrice,
+        originalPrice: originalPrice,
+        selectedVariant: variantLabel,
+        stock: product.stockQuantity || (product as any).stockCount,
+      },
+      quantity
+    );
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2500);
   };
+
+  const BreadcrumbArrow = direction === 'rtl' ? ChevronLeft : ChevronRight;
 
   return (
     <div className="space-y-12">
@@ -71,25 +104,25 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
         className="flex items-center gap-2 text-xs text-slate-500 flex-wrap"
       >
         <Link href="/" className="hover:text-brand-deep transition-colors">
-          الرئيسية
+          {t('home') || 'الرئيسية'}
         </Link>
-        <ChevronLeft className="w-3.5 h-3.5 text-slate-400" />
+        <BreadcrumbArrow className="w-3.5 h-3.5 text-slate-400" />
         <Link
-          href="/categories"
+          href="/products"
           className="hover:text-brand-deep transition-colors"
         >
-          التصنيفات
+          {t('allProducts') || 'كل المنتجات'}
         </Link>
-        <ChevronLeft className="w-3.5 h-3.5 text-slate-400" />
+        <BreadcrumbArrow className="w-3.5 h-3.5 text-slate-400" />
         <Link
           href={`/category/${product.categorySlug}`}
           className="hover:text-brand-deep transition-colors"
         >
           {product.category}
         </Link>
-        <ChevronLeft className="w-3.5 h-3.5 text-slate-400" />
+        <BreadcrumbArrow className="w-3.5 h-3.5 text-slate-400" />
         <span className="font-bold text-brand-deep truncate max-w-xs">
-          {product.name}
+          {productName}
         </span>
       </nav>
 
@@ -159,7 +192,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
         </div>
 
         {/* الجانب الأيسر: تفاصيل الشراء، الأسعار، المتغيرات، وإضافة للسلة */}
-        <div className="lg:col-span-6 flex flex-col justify-between text-right">
+        <div className="lg:col-span-6 flex flex-col justify-between text-start">
           <div>
             {/* الماركة والتصنيف */}
             <div className="flex items-center justify-between gap-4 mb-2">
@@ -180,12 +213,12 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
 
             {/* اسم المستحضر */}
             <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 leading-snug mb-3">
-              {product.name}
+              {productName}
             </h1>
 
             {/* نبذة سريعة */}
             <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-6 font-normal">
-              {product.description}
+              {productDescription}
             </p>
 
             {/* السعر والتخفيض */}
@@ -196,12 +229,12 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 </span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl sm:text-3xl font-black text-brand-deep">
-                    {finalPrice.toLocaleString("ar-DZ")}
+                    {finalPrice.toLocaleString()}
                   </span>
-                  <span className="text-sm font-bold text-slate-600">دج</span>
+                  <span className="text-sm font-bold text-slate-600">{t('currency') || 'دج'}</span>
                   {originalPrice && (
                     <span className="text-sm text-slate-400 line-through mr-2">
-                      {originalPrice.toLocaleString("ar-DZ")} دج
+                      {originalPrice.toLocaleString()} {t('currency') || 'دج'}
                     </span>
                   )}
                 </div>
@@ -334,7 +367,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
-            طريقة وإرشادات الاستخدام
+            {t('usageTab') || 'طريقة وإرشادات الاستخدام'}
           </button>
 
           <button
@@ -346,7 +379,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
-            التحذيرات وموانع الاستعمال
+            {t('warningsTab') || 'التحذيرات وموانع الاستعمال'}
           </button>
 
           <button
@@ -358,7 +391,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
-            المواصفات والتركيبة
+            {t('detailsTab') || 'المواصفات والتركيبة'}
           </button>
         </div>
 
@@ -369,7 +402,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-brand-green shrink-0 mt-0.5" />
                 <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
-                  {product.usageInstructions}
+                  {getLocalized(product, 'usageInstructions') || product.usageInstructions || 'يرجى اتباع إرشادات الاستخدام المدونة على العبوة بدقة.'}
                 </p>
               </div>
             </div>
@@ -380,7 +413,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               <div className="flex items-start gap-3 bg-amber-50/70 p-4 rounded-2xl border border-amber-200/60">
                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <p className="text-xs sm:text-sm text-amber-900 leading-relaxed font-medium">
-                  {product.healthWarnings}
+                  {getLocalized(product, 'healthWarnings') || product.healthWarnings || 'للاستعمال الخارجي فقط. يحفظ بعيداً عن متناول الأطفال.'}
                 </p>
               </div>
             </div>

@@ -41,10 +41,12 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
  * ```
  */
 export interface ICategory extends Document {
-  /** اسم التصنيف باللغة العربية */
+  /** اسم التصنيف باللغة العربية (إجباري) */
   nameAr: string;
-  /** اسم التصنيف باللغة الفرنسية */
-  nameFr: string;
+  /** اسم التصنيف باللغة الفرنسية (اختياري) */
+  nameFr?: string;
+  /** اسم التصنيف باللغة الإنجليزية (اختياري) */
+  nameEn?: string;
   /** المعرف اللطيف في الروابط (URL slug) */
   slug: string;
   /** اسم الأيقونة المعتمدة (مثل 'Droplets', 'Heart', 'ShieldCheck', 'Scissors') */
@@ -55,8 +57,10 @@ export interface ICategory extends Document {
   descriptionAr?: string;
   /** وصف القسم باللغة الفرنسية */
   descriptionFr?: string;
+  /** وصف القسم باللغة الإنجليزية */
+  descriptionEn?: string;
   /** المعرف المرجعي للتصنيف الأب (إذا كان تصنيفاً فرعياً، null إذا كان قسماً رئيسياً) */
-  parentCategory?: mongoose.Types.ObjectId;
+  parentCategory?: mongoose.Types.ObjectId | null;
   /** ترتيب الظهور في القوائم والواجهة */
   sortOrder: number;
   /** حالة التفعيل وظهور التصنيف للزوار */
@@ -74,8 +78,13 @@ const CategorySchema = new Schema<ICategory>(
     },
     nameFr: {
       type: String,
-      required: [true, 'اسم التصنيف بالفرنسية مطلوب'],
       trim: true,
+      default: '',
+    },
+    nameEn: {
+      type: String,
+      trim: true,
+      default: '',
     },
     slug: {
       type: String,
@@ -99,6 +108,10 @@ const CategorySchema = new Schema<ICategory>(
       trim: true,
     },
     descriptionFr: {
+      type: String,
+      trim: true,
+    },
+    descriptionEn: {
       type: String,
       trim: true,
     },

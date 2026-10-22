@@ -24,18 +24,18 @@ export const Footer: React.FC = () => {
               <Truck className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-bold text-white text-sm">توصيل سريع واستلام فوري</h4>
-              <p className="text-xs text-slate-300">إلى باب منزلك أو من مقرنا مباشرة</p>
+              <h4 className="font-bold text-white text-sm">توصيل سريع ومضمون</h4>
+              <p className="text-xs text-slate-300">لباب منزلك أو إلى أقرب مكتب توزيع</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-brand-lime/15 flex items-center justify-center text-brand-lime shrink-0">
-              <Clock className="w-6 h-6" />
+              <Truck className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-bold text-white text-sm">تحضير مسبق للوصفات</h4>
-              <p className="text-xs text-slate-300">ارفع وصفتك ونجهزها قبل وصولك</p>
+              <h4 className="font-bold text-white text-sm">شحن لكافة الـ 69 ولاية</h4>
+              <p className="text-xs text-slate-300">تغطية وطنية شاملة مع الدفع عند الاستلام</p>
             </div>
           </div>
 
@@ -70,13 +70,13 @@ export const Footer: React.FC = () => {
           </h3>
           <ul className="space-y-2 text-xs">
             <li>
-              <Link href="/prescription" className="hover:text-emerald-300 transition-colors">
-                طلب تحضير وصفة طبية (استلام مباشر من المقر)
+              <Link href="/categories" className="hover:text-emerald-300 transition-colors">
+                كافة التصنيفات والأقسام
               </Link>
             </li>
             <li>
-              <Link href="/drug-inquiry" className="hover:text-emerald-300 transition-colors">
-                الاستفسار عن توفر دواء
+              <Link href="/category/skincare" className="hover:text-emerald-300 transition-colors">
+                مستحضرات العناية بالبشرة
               </Link>
             </li>
             <li>
@@ -91,10 +91,10 @@ export const Footer: React.FC = () => {
             </li>
             <li>
               <Link
-                href="/pharmacy-location"
+                href="/contact"
                 className="hover:text-emerald-300 transition-colors flex items-center gap-1"
               >
-                <span>موقعنا وأوقات العمل</span>
+                <span>تواصل معنا وخدمة العملاء</span>
               </Link>
             </li>
           </ul>
@@ -113,7 +113,7 @@ export const Footer: React.FC = () => {
             </li>
             <li>
               <Link href="/privacy-policy" className="hover:text-emerald-300 transition-colors">
-                سياسة الخصوصية وأمان البيانات الطبية
+                سياسة الخصوصية وأمان البيانات
               </Link>
             </li>
             <li>
@@ -127,7 +127,7 @@ export const Footer: React.FC = () => {
               </Link>
             </li>
             <li>
-              <Link href="/order-tracking" className="hover:text-emerald-300 transition-colors">
+              <Link href="/track" className="hover:text-emerald-300 transition-colors">
                 تتبع حالة الطلب
               </Link>
             </li>
@@ -137,11 +137,11 @@ export const Footer: React.FC = () => {
         {/* Col 4: Contact & Working Hours */}
         <div className="space-y-3">
           <h3 className="font-bold text-white text-sm mb-4 border-r-2 border-brand-lime pr-2">
-            معلومات المقر والتواصل
+            خدمة العملاء والتواصل
           </h3>
           <div className="flex items-start gap-2.5 text-xs">
             <MapPin className="w-4 h-4 text-brand-turquoise shrink-0 mt-0.5" />
-            <span>مركز بودشيش • PharmaClick، الجزائر</span>
+            <span>متجر PharmaClick الإلكتروني، الجزائر</span>
           </div>
           <div className="flex items-center gap-2.5 text-xs">
             <Phone className="w-4 h-4 text-brand-green shrink-0" />
@@ -151,7 +151,7 @@ export const Footer: React.FC = () => {
             <Clock className="w-4 h-4 text-brand-lime shrink-0 mt-0.5" />
             <div>
               <p>السبت - الخميس: 08:30 إلى 20:30</p>
-              <p className="text-slate-400">الجمعة: مغلق (أو حسب جدول المناوبة)</p>
+              <p className="text-slate-400">الجمعة: خدمة الدعم عبر واتساب</p>
             </div>
           </div>
         </div>
@@ -160,7 +160,7 @@ export const Footer: React.FC = () => {
       {/* 3. Bottom Copyright */}
       <div className="border-t border-slate-700/80 bg-[#032d3b] text-center text-xs py-4 px-4 text-slate-400">
         <p>
-          جميع الحقوق محفوظة &copy; 2026 بودشيش • PharmaClick - تطوير المهندس إسحاق جيلالي بن فرج.
+          جميع الحقوق محفوظة &copy; 2026 PharmaClick - تطوير المهندس إسحاق جيلالي بن فرج.
         </p>
       </div>
     </footer>

@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
-export type OrderPickupMethod = 'delivery' | 'in_person_pickup'; // توصيل لـ 69 ولاية أو استلام شخصي مباشر من المقر
+export type OrderPickupMethod = 'delivery'; // توصيل لكافة الـ 69 ولاية (توصيل للمنزل أو لمكتب التوزيع)
 
 export type OrderDeliveryType = 'home' | 'desk'; // توصيل للمنزل أو لمكتب التوزيع
 
@@ -8,7 +8,7 @@ export type OrderStatus =
   | 'pending' // قيد الانتظار والمراجعة
   | 'confirmed' // تم التأكيد هاتفياً
   | 'processing' // قيد التجهيز والتحضير
-  | 'ready_for_pickup' // جاهز للاستلام من المقر
+  | 'ready_for_pickup' // جاهز للاستلام من مكتب التوزيع (Stop Desk)
   | 'shipped' // تم تسليمه لشركة التوصيل
   | 'delivered' // تم التوصيل والاستلام بنجاح
   | 'cancelled'; // تم الإلغاء
@@ -67,8 +67,8 @@ export interface IOrderShippingAddress {
  * نموذج طلبات الشراء (Order Document)
  *
  * @description
- * يدير كامل عمليات الشراء في المتجر سواء بالتوصيل لكافة الولايات الـ 69 في الجزائر
- * أو الاستلام الشخصي المباشر من مقرنا.
+ * يدير كامل عمليات الشراء في المتجر بالتوصيل لكافة الولايات الـ 69 في الجزائر
+ * (سواء التوصيل لباب المنزل أو الاستلام من مكتب شركة التوصيل Stop Desk).
  *
  * @example
  * ```typescript
@@ -107,18 +107,25 @@ export interface IOrderShippingAddress {
  *   paymentMethod: 'cod',
  * });
  *
- * // 2. إنشاء طلب استلام شخصي مباشر من المقر (بدون شحن)
- * const pickupOrder = await Order.create({
+ * // 2. إنشاء طلب استلام من مكتب شركة التوصيل (Stop Desk)
+ * const deskOrder = await Order.create({
  *   customer: {
  *     fullName: 'سارة بلقاسم',
  *     phone: '0661987654',
  *   },
- *   pickupMethod: 'in_person_pickup',
+ *   pickupMethod: 'delivery',
+ *   shippingAddress: {
+ *     wilayaCode: 16,
+ *     wilayaName: 'الجزائر العاصمة',
+ *     commune: 'باب الزوار',
+ *     deliveryType: 'desk',
+ *   },
  *   items: [...],
  *   subtotal: 4500,
- *   shippingFee: 0,
- *   totalAmount: 4500,
+ *   shippingFee: 300,
+ *   totalAmount: 4800,
  *   status: 'pending',
+ *   paymentMethod: 'cod',
  * });
  * ```
  */
@@ -127,15 +134,15 @@ export interface IOrder extends Document {
   orderNumber: string;
   /** بيانات العميل */
   customer: IOrderCustomer;
-  /** طريقة الاستلام: 'delivery' (توصيل لـ 69 ولاية) أو 'in_person_pickup' (استلام شخصي من المقر) */
+  /** طريقة الطلب: 'delivery' (توصيل لكافة الـ 69 ولاية) */
   pickupMethod: OrderPickupMethod;
-  /** تفاصيل عنوان الشحن (إجباري إذا كانت طريقة الاستلام هي التوصيل) */
-  shippingAddress?: IOrderShippingAddress;
+  /** تفاصيل عنوان الشحن لكافة الطلبات */
+  shippingAddress: IOrderShippingAddress;
   /** قائمة المنتجات المطلوبة مع أسعارها وكمياتها وقت الشراء */
   items: IOrderItem[];
   /** المجموع الفرعي لسعر المنتجات دون رسوم التوصيل */
   subtotal: number;
-  /** رسوم التوصيل وفق الولاية ونوع التوصيل (أو 0 للاستلام من المقر) */
+  /** رسوم التوصيل وفق الولاية ونوع التوصيل (منزل أو مكتب توزيع) */
   shippingFee: number;
   /** قيمة الخصم المالي المطبق إن وجد */
   discountAmount: number;
@@ -266,16 +273,14 @@ const OrderSchema = new Schema<IOrder>(
     },
     pickupMethod: {
       type: String,
-      enum: ['delivery', 'in_person_pickup'],
-      required: [true, 'طريقة الاستلام مطلوبة (توصيل أو استلام شخصي من المقر)'],
+      enum: ['delivery'],
+      required: [true, 'طريقة التوصيل مطلوبة'],
       default: 'delivery',
       index: true,
     },
     shippingAddress: {
       type: OrderShippingAddressSchema,
-      required: function (this: IOrder) {
-        return this.pickupMethod === 'delivery';
-      },
+      required: [true, 'عنوان التوصيل مطلوب لكافة الطلبات'],
     },
     items: {
       type: [OrderItemSchema],

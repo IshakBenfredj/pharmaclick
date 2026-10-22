@@ -2,18 +2,41 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronRight, ChevronLeft, ArrowLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, ArrowLeft, ArrowRight } from "lucide-react";
 import { MOCK_BANNERS, MockBanner } from "@/lib/data/mockData";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface BannerCarouselProps {
-  banners?: MockBanner[];
+  banners?: any[];
 }
 
 export const BannerCarousel: React.FC<BannerCarouselProps> = ({
-  banners = MOCK_BANNERS,
+  banners: initialBanners,
 }) => {
+  const { getLocalized, direction } = useLanguage();
+  const [banners, setBanners] = useState<any[]>(initialBanners || MOCK_BANNERS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Fetch active banners from MongoDB
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchBanners() {
+      try {
+        const res = await fetch('/api/banners');
+        const data = await res.json();
+        if (isMounted && data.success && Array.isArray(data.banners) && data.banners.length > 0) {
+          setBanners(data.banners);
+        }
+      } catch (err) {
+        console.warn('Could not load banners from API:', err);
+      }
+    }
+    fetchBanners();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (isPaused || banners.length <= 1) return;
@@ -33,7 +56,12 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({
 
   if (!banners || banners.length === 0) return null;
 
-  const currentBanner = banners[currentIndex];
+  const currentBanner = banners[currentIndex] || banners[0];
+
+  const title = getLocalized(currentBanner, "title") || currentBanner.title;
+  const subtitle = getLocalized(currentBanner, "subtitle") || currentBanner.subtitle;
+  const badgeText = getLocalized(currentBanner, "badgeText") || currentBanner.badgeText || "عرض حصري";
+  const buttonText = getLocalized(currentBanner, "buttonText") || currentBanner.buttonText || "اكتشف الآن";
 
   return (
     <div
@@ -53,11 +81,16 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({
                 : "opacity-0 z-0 pointer-events-none"
             }`}
           >
-            <img
-              src={b.imageUrlDesktop}
-              alt={b.title}
-              className="w-full h-full object-cover object-center filter brightness-[0.4] sm:brightness-[0.45]"
-            />
+            <picture className="w-full h-full block">
+              {b.imageUrlMobile && (
+                <source media="(max-width: 640px)" srcSet={b.imageUrlMobile} />
+              )}
+              <img
+                src={b.imageUrlDesktop || b.imageUrlMobile}
+                alt={b.title}
+                className="w-full h-full object-cover object-center filter brightness-[0.4] sm:brightness-[0.45]"
+              />
+            </picture>
             {/* Gradient Overlays */}
             <div className="absolute inset-0 bg-linear-to-r from-brand-deep/95 via-brand-deep/70 to-transparent" />
             <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-transparent to-transparent sm:hidden" />
@@ -65,23 +98,25 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({
         ))}
 
         {/* Content Box */}
-        <div className="relative z-20 max-w-7xl mx-auto px-6 sm:px-12 py-10 w-full text-right">
-          <div className="max-w-2xl animate-in fade-in slide-in-from-right-4 duration-500">
+        <div className="relative z-20 max-w-7xl mx-auto px-6 sm:px-12 py-10 w-full text-start">
+          <div className="max-w-2xl animate-in fade-in duration-500">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/20 text-brand-lime text-xs font-bold px-3.5 py-1.5 rounded-full mb-4 shadow-xs">
               <span className="w-2 h-2 rounded-full bg-brand-green animate-ping" />
-              <span>{currentBanner.badgeText}</span>
+              <span>{badgeText}</span>
             </div>
 
             {/* Title */}
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-white leading-tight mb-4 tracking-tight">
-              {currentBanner.title}
+              {title}
             </h2>
 
             {/* Subtitle */}
-            <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-6 font-medium">
-              {currentBanner.subtitle}
-            </p>
+            {subtitle && (
+              <p className="text-slate-200 text-sm sm:text-base leading-relaxed mb-6 font-medium">
+                {subtitle}
+              </p>
+            )}
 
             {/* CTA Button */}
             <div className="flex flex-wrap items-center gap-3">
@@ -89,8 +124,12 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({
                 href={currentBanner.linkUrl}
                 className="inline-flex items-center gap-2.5 bg-brand-green hover:bg-brand-lime hover:text-brand-deep text-white font-black text-sm px-7 py-3.5 rounded-full shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
               >
-                <span>{currentBanner.buttonText}</span>
-                <ArrowLeft className="w-4 h-4" />
+                <span>{buttonText}</span>
+                {direction === 'rtl' ? (
+                  <ArrowLeft className="w-4 h-4" />
+                ) : (
+                  <ArrowRight className="w-4 h-4" />
+                )}
               </Link>
             </div>
           </div>

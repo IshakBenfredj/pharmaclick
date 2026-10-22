@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Search,
   ShoppingBag,
-  FileText,
   MapPin,
   Phone,
   Menu,
@@ -16,32 +15,275 @@ import {
   User,
   ShieldCheck,
   ChevronDown,
-  HelpCircle,
+  ChevronLeft,
 } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { Button } from "../ui/Button";
-import { MOCK_PRODUCTS } from "@/lib/data/mockData";
+import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/data/mockData";
+import { useCart } from "@/context/CartContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
-export const Header: React.FC = () => {
+interface CategoryNavItem {
+  _id?: string;
+  nameAr: string;
+  nameFr?: string;
+  nameEn?: string;
+  slug: string;
+  subCategories?: {
+    nameAr: string;
+    nameFr?: string;
+    nameEn?: string;
+    slug: string;
+    image?: string;
+  }[];
+}
+
+function NavigationPills() {
+  const pathname = usePathname();
+  const { t, getLocalized } = useLanguage();
+  const [openDropdownSlug, setOpenDropdownSlug] = useState<string | null>(null);
+  const [topCategories, setTopCategories] = useState<CategoryNavItem[]>(() =>
+    MOCK_CATEGORIES.slice(0, 5).map((c) => ({
+      _id: c._id,
+      nameAr: c.nameAr,
+      nameFr: c.nameFr,
+      slug: c.slug,
+      subCategories: c.subCategories,
+    }))
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch("/api/categories?topNav=true&limit=5")
+      .then((res) => res.json())
+      .then((data) => {
+        if (
+          isMounted &&
+          data.success &&
+          Array.isArray(data.categories) &&
+          data.categories.length > 0
+        ) {
+          setTopCategories(data.categories);
+        }
+      })
+      .catch((err) => {
+        console.error("Error loading top categories:", err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // إغلاق القائمة المنسدلة عند النقر في أي مكان آخر
+  useEffect(() => {
+    const handleDocClick = () => setOpenDropdownSlug(null);
+    document.addEventListener("click", handleDocClick);
+    return () => document.removeEventListener("click", handleDocClick);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-1.5 sm:gap-2 overflow-visible py-0.5">
+      {/* 1. الرئيسية */}
+      <Link
+        href="/"
+        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap cursor-pointer text-xs font-bold ${
+          pathname === "/"
+            ? "bg-brand-teal text-white shadow-xs"
+            : "text-slate-600 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
+        }`}
+      >
+        <span>{t("home")}</span>
+      </Link>
+
+      {/* 2. كل المنتجات */}
+      <Link
+        href="/products"
+        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap cursor-pointer text-xs font-bold ${
+          pathname === "/products"
+            ? "bg-brand-teal text-white shadow-xs"
+            : "text-slate-600 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
+        }`}
+      >
+        <span>{t("allProducts")}</span>
+      </Link>
+
+      {/* 3. كافة التصنيفات */}
+      <Link
+        href="/categories"
+        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap cursor-pointer text-xs font-bold ${
+          pathname === "/categories"
+            ? "bg-brand-teal text-white shadow-xs"
+            : "text-slate-600 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
+        }`}
+      >
+        <span>{t("allCategories")}</span>
+      </Link>
+
+      {/* 3. أشهر الفئات من قاعدة البيانات مع القوائم المنسدلة عند التحويم */}
+      {topCategories.map((cat) => {
+        const hasSubs =
+          Array.isArray(cat.subCategories) && cat.subCategories.length > 0;
+        const isActive =
+          pathname === `/category/${cat.slug}` ||
+          pathname.startsWith(`/category/${cat.slug}?`);
+        const isOpen = openDropdownSlug === cat.slug;
+
+        return (
+          <div
+            key={cat.slug}
+            className="relative group"
+            onMouseEnter={() => setOpenDropdownSlug(cat.slug)}
+            onMouseLeave={() => setOpenDropdownSlug(null)}
+          >
+            <div
+              className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap text-xs font-bold ${
+                isActive
+                  ? "bg-brand-teal text-white shadow-xs"
+                  : "text-slate-700 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
+              }`}
+            >
+              <Link
+                href={`/category/${cat.slug}`}
+                className="cursor-pointer hover:underline"
+              >
+                {getLocalized(cat, 'name') || cat.nameAr}
+              </Link>
+              {hasSubs && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setOpenDropdownSlug((prev) =>
+                      prev === cat.slug ? null : cat.slug
+                    );
+                  }}
+                  className={`p-0.5 rounded-full hover:bg-slate-100/60 transition-colors cursor-pointer ${
+                    isActive ? "text-white" : "text-slate-400 hover:text-brand-deep"
+                  }`}
+                  aria-label={`تصفح أقسام ${getLocalized(cat, 'name') || cat.nameAr}`}
+                >
+                  <ChevronDown
+                    className={`w-3 h-3 transition-transform duration-200 shrink-0 ${
+                      isOpen ? "rotate-180" : "group-hover:rotate-180"
+                    }`}
+                  />
+                </button>
+              )}
+            </div>
+
+            {/* القائمة المنسدلة للفئات الفرعية (Hover & Toggle Dropdown) */}
+            {hasSubs && (
+              <div
+                className={`absolute top-full right-0 pt-1.5 transition-all duration-200 z-50 ${
+                  isOpen
+                    ? "opacity-100 translate-y-0 pointer-events-auto"
+                    : "opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto"
+                }`}
+              >
+                <div className="bg-white rounded-2xl shadow-xl border border-slate-100/90 p-3 min-w-[270px] text-right">
+                  {/* ترويسة القائمة المنسدلة ورابط جلب كافة المنتجات */}
+                  <div className="px-2.5 py-1.5 border-b border-slate-100/80 mb-2 flex items-center justify-between">
+                    <span className="text-[11px] font-black text-slate-400">
+                      {getLocalized(cat, 'name') || cat.nameAr}
+                    </span>
+                    <Link
+                      href={`/category/${cat.slug}`}
+                      className="text-[11px] font-bold text-brand-teal hover:text-brand-deep hover:underline"
+                    >
+                      {t("viewAllResults")} ←
+                    </Link>
+                  </div>
+
+                  {/* قائمة الفئات الفرعية بالصور والعناوين */}
+                  <div className="space-y-1">
+                    {cat.subCategories!.map((sub, sIdx) => {
+                      const subName = getLocalized(sub, 'name') || sub.nameAr;
+                      return (
+                        <Link
+                          key={sIdx}
+                          href={`/category/${cat.slug}?sub=${sub.slug}`}
+                          className="flex items-center justify-between gap-3 px-2.5 py-2 rounded-xl hover:bg-slate-50 transition-colors group/item"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {sub.image ? (
+                              <img
+                                src={sub.image}
+                                alt={subName}
+                                className="w-8 h-8 rounded-lg object-cover border border-slate-100 shrink-0"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-lg bg-teal-50 text-brand-teal flex items-center justify-center shrink-0 text-xs font-bold">
+                                {subName.charAt(0)}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <span className="block text-xs font-bold text-slate-700 group-hover/item:text-brand-deep truncate">
+                                {subName}
+                              </span>
+                            </div>
+                          </div>
+                        <ChevronLeft className="w-3.5 h-3.5 text-slate-300 group-hover/item:text-brand-teal transition-transform group-hover/item:-translate-x-0.5 shrink-0" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    })}
+
+      {/* 4. الماركات المعتمدة */}
+      <Link
+        href="/brands"
+        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap cursor-pointer text-xs font-bold ${
+          pathname === "/brands"
+            ? "bg-brand-teal text-white shadow-xs"
+            : "text-slate-600 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
+        }`}
+      >
+        <span>الماركات المعتمدة</span>
+      </Link>
+
+      {/* 5. العروض والتخفيضات */}
+      <Link
+        href="/offers"
+        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap cursor-pointer text-xs font-bold ${
+          pathname === "/offers"
+            ? "bg-brand-teal text-white shadow-xs"
+            : "text-slate-600 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
+        }`}
+      >
+        <span>العروض والتخفيضات</span>
+        <span className="bg-brand-green text-white text-[9px] font-black px-1.5 py-0.5 rounded-full tracking-wider">
+          خصومات
+        </span>
+      </Link>
+
+    </div>
+  );
+}
+
+const HeaderContent: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
-  const cartItemCount = 3;
-
-  const NAV_ITEMS = [
-    { label: "الرئيسية", href: "/", isHome: true },
-    { label: "كافة التصنيفات", href: "/categories" },
-    { label: "العناية بالبشرة", href: "/category/skincare" },
-    { label: "استفسار عن دواء", href: "/inquiry", hasBadge: "فوري" },
-    { label: "واقيات الشمس", href: "/category/sun-protection" },
-    { label: "الفيتامينات والمكملات", href: "/category/vitamins" },
-    { label: "الماركات المعتمدة", href: "/brands" },
-    { label: "العروض والتخفيضات", href: "/offers", hasBadge: "خصومات" },
-  ];
+  const { totalItemsCount, openDrawer } = useCart();
+  const { t } = useLanguage();
 
   // بحث فوري متجاوب
-  const QUICK_SUGGESTIONS = ["سيروم هيالورونيك", "واقي شمس", "سيرافي", "بايوديرما", "أوميغا 3", "أجهزة قياس"];
+  const QUICK_SUGGESTIONS = [
+    "سيروم هيالورونيك",
+    "واقي شمس",
+    "سيرافي",
+    "بايوديرما",
+    "أوميغا 3",
+    "أجهزة قياس",
+  ];
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -52,22 +294,18 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-xs border-b border-slate-100">
-      {/* 1. الشريط العلوي للإعلانات والخدمة (Top Utility Bar مستوحى من Nova Santé بألوان PharmaClick) */}
+      {/* 1. الشريط العلوي للإعلانات والخدمة (Top Utility Bar) */}
       <div className="bg-brand-deep text-white text-xs py-2 px-4 border-b border-brand-teal/20">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* الجانب الأيمن: التوصيل والأصالة */}
           <div className="flex items-center gap-4 sm:gap-6">
             <span className="flex items-center gap-1.5 text-slate-200">
               <Truck className="w-3.5 h-3.5 text-brand-turquoise" />
-              <span>توصيل سريع وموثوق إلى 69 ولاية في الجزائر 🇩🇿</span>
-            </span>
-            <span className="hidden lg:flex items-center gap-1.5 text-slate-300 border-r border-slate-600/80 pr-4">
-              <ShieldCheck className="w-3.5 h-3.5 text-brand-green" />
-              <span>مستحضرات طبية ومخبرية أصلية 100%</span>
+              <span>{t("deliveryBadge")}</span>
             </span>
           </div>
 
-          {/* الجانب الأيسر: رقم المساعدة / الواتساب ورابط الإدارة */}
+          {/* الجانب الأيسر: رقم المساعدة / الواتساب ومبدل اللغة */}
           <div className="flex items-center gap-4">
             <a
               href="https://wa.me/213541790205"
@@ -76,15 +314,11 @@ export const Header: React.FC = () => {
               className="flex items-center gap-1.5 text-brand-lime hover:text-white transition-colors font-medium text-[11px]"
             >
               <Phone className="w-3.5 h-3.5" />
-              <span>خدمة الزبائن: 0541790205</span>
+              <span>{t("customerService")}: 0541790205</span>
             </a>
             <span className="text-slate-500 hidden sm:inline">•</span>
-            <Link
-              href="/admin/login"
-              className="text-slate-300 hover:text-white transition-colors text-[11px] hidden sm:inline hover:underline"
-            >
-              لوحة التحكم
-            </Link>
+            {/* مبدل اللغة في الشريط العلوي */}
+            <LanguageSwitcher variant="topbar" />
           </div>
         </div>
       </div>
@@ -103,7 +337,7 @@ export const Header: React.FC = () => {
                 value={searchQuery}
                 onFocus={() => setIsSearchFocused(true)}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث عن أدوية، مستحضرات عناية، فيتامينات، ماركات..."
+                placeholder={t("searchPlaceholder")}
                 className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 pr-11 pl-28 text-sm focus:outline-none focus:border-brand-teal focus:ring-2 focus:ring-brand-teal/20 transition-all text-slate-800 placeholder-slate-400"
               />
               <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -111,7 +345,7 @@ export const Header: React.FC = () => {
                 type="submit"
                 className="absolute left-1.5 top-1/2 -translate-y-1/2 bg-brand-deep hover:bg-brand-teal text-white text-xs font-bold px-5 py-2 rounded-full transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
               >
-                <span>بحث</span>
+                <span>{t("searchButton")}</span>
               </button>
             </form>
 
@@ -153,8 +387,10 @@ export const Header: React.FC = () => {
                             MOCK_PRODUCTS.filter(
                               (p) =>
                                 p.name.includes(searchQuery.trim()) ||
-                                p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                p.category.includes(searchQuery.trim())
+                                p.brand
+                                  .toLowerCase()
+                                  .includes(searchQuery.toLowerCase()) ||
+                                p.category.includes(searchQuery.trim()),
                             ).length
                           }{" "}
                           مستحضر
@@ -165,14 +401,18 @@ export const Header: React.FC = () => {
                         {MOCK_PRODUCTS.filter(
                           (p) =>
                             p.name.includes(searchQuery.trim()) ||
-                            p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            p.category.includes(searchQuery.trim())
+                            p.brand
+                              .toLowerCase()
+                              .includes(searchQuery.toLowerCase()) ||
+                            p.category.includes(searchQuery.trim()),
                         ).length > 0 ? (
                           MOCK_PRODUCTS.filter(
                             (p) =>
                               p.name.includes(searchQuery.trim()) ||
-                              p.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                              p.category.includes(searchQuery.trim())
+                              p.brand
+                                .toLowerCase()
+                                .includes(searchQuery.toLowerCase()) ||
+                              p.category.includes(searchQuery.trim()),
                           )
                             .slice(0, 5)
                             .map((prod) => (
@@ -205,7 +445,10 @@ export const Header: React.FC = () => {
                                     </span>
                                     {prod.originalPrice && (
                                       <span className="text-[10px] text-slate-400 line-through">
-                                        {prod.originalPrice.toLocaleString("ar-DZ")} دج
+                                        {prod.originalPrice.toLocaleString(
+                                          "ar-DZ",
+                                        )}{" "}
+                                        دج
                                       </span>
                                     )}
                                   </div>
@@ -221,7 +464,7 @@ export const Header: React.FC = () => {
                               href="/search"
                               className="text-xs text-brand-teal font-bold hover:underline"
                             >
-                              الانتقال إلى صفحة البحث الشامل أو إرسال استفسار خاص
+                              الانتقال إلى صفحة البحث الشامل أو التواصل معنا
                             </Link>
                           </div>
                         )}
@@ -243,7 +486,7 @@ export const Header: React.FC = () => {
             )}
           </div>
 
-          {/* أزرار العمليات للزبون (تتبع، حسابي، السلة، رفع الوصفة) */}
+          {/* أزرار العمليات للزبون (تتبع، تغيير اللغة، السلة، عروض) */}
           <div className="flex items-center gap-3 sm:gap-4">
             {/* تتبع طلبيتي */}
             <Link
@@ -251,61 +494,44 @@ export const Header: React.FC = () => {
               className="hidden lg:flex items-center gap-2 text-slate-700 hover:text-brand-deep transition-colors py-1 px-2 rounded-lg hover:bg-slate-50"
             >
               <Truck className="w-5 h-5 text-brand-teal" />
-              <div className="flex flex-col text-right leading-tight">
-                <span className="text-[11px] text-slate-400">تابع طلبك</span>
-                <span className="text-xs font-bold">تتبع طلبيتي</span>
+              <div className="flex flex-col text-start leading-tight">
+                <span className="text-[11px] text-slate-400">{t("trackOrderSub")}</span>
+                <span className="text-xs font-bold">{t("trackOrder")}</span>
               </div>
             </Link>
 
-            {/* حسابي / تسجيل */}
-            <Link
-              href="/admin/login"
-              className="hidden sm:flex items-center gap-2 text-slate-700 hover:text-brand-deep transition-colors py-1 px-2 rounded-lg hover:bg-slate-50"
-            >
-              <User className="w-5 h-5 text-brand-teal" />
-              <div className="flex flex-col text-right leading-tight">
-                <span className="text-[11px] text-slate-400">مرحباً بك</span>
-                <span className="text-xs font-bold">تسجيل الدخول</span>
-              </div>
-            </Link>
+            {/* مبدل اللغة في الشريط الرئيسي */}
+            <LanguageSwitcher variant="compact" />
 
-            {/* سلة المشتريات (مع شارة خضراء تفاعلية كما في المرجع) */}
-            <Link
-              href="/cart"
-              className="relative flex items-center gap-2 py-1.5 px-3 rounded-full bg-slate-50 hover:bg-teal-50/50 border border-slate-200/80 transition-all text-brand-deep group"
-              aria-label="سلة المشتريات"
+            {/* سلة المشتريات */}
+            <button
+              type="button"
+              onClick={openDrawer}
+              className="relative flex items-center gap-2 py-1.5 px-3 rounded-full bg-slate-50 hover:bg-teal-50/50 border border-slate-200/80 transition-all text-brand-deep group cursor-pointer"
+              aria-label={t("cart")}
             >
               <div className="relative">
                 <ShoppingBag className="w-5 h-5 text-brand-deep group-hover:text-brand-green transition-colors" />
-                <span className="absolute -top-2 -left-2 bg-brand-green text-white text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-xs">
-                  {cartItemCount}
-                </span>
+                {totalItemsCount > 0 && (
+                  <span className="absolute -top-2 -left-2 bg-brand-green text-white text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-xs">
+                    {totalItemsCount}
+                  </span>
+                )}
               </div>
               <span className="hidden sm:inline font-bold text-xs text-brand-deep">
-                السلة
+                {t("cart")}
               </span>
-            </Link>
+            </button>
 
-            {/* زر استفسار عن دواء السريع */}
-            <Link href="/inquiry" className="hidden lg:inline-flex">
-              <button
-                type="button"
-                className="bg-teal-50/80 hover:bg-teal-100/90 text-brand-deep border border-brand-teal/30 font-bold rounded-full py-2 px-3 text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
-              >
-                <HelpCircle className="w-3.5 h-3.5 text-brand-teal" />
-                <span>استفسار عن دواء</span>
-              </button>
-            </Link>
-
-            {/* زر رفع الوصفة الطبية البارز (CTA) */}
-            <Link href="/prescription" className="hidden xl:inline-flex">
+            {/* زر العروض الحصرية (CTA) */}
+            <Link href="/offers" className="hidden lg:inline-flex">
               <Button
                 variant="outline"
                 size="sm"
-                leftIcon={<FileText className="w-4 h-4 text-brand-teal" />}
+                leftIcon={<Percent className="w-4 h-4 text-brand-teal" />}
                 className="border-brand-teal text-brand-deep hover:bg-brand-teal/5 font-bold rounded-full py-2 px-3.5 text-xs"
               >
-                تحضير وصفة (استلام مباشر من المقر)
+                {t("offersAndDiscounts")}
               </Button>
             </Link>
 
@@ -315,7 +541,11 @@ export const Header: React.FC = () => {
               className="md:hidden p-2 text-slate-700 hover:text-brand-deep focus:outline-none rounded-lg"
               aria-label="القائمة"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
             </button>
           </div>
         </div>
@@ -327,7 +557,7 @@ export const Header: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="ابحث عن أدوية أو مستحضرات عناية..."
+              placeholder="ابحث عن مستحضرات عناية، فيتامينات..."
               className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 pr-10 pl-4 text-xs focus:outline-none focus:border-brand-teal text-slate-800"
             />
             <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -336,39 +566,19 @@ export const Header: React.FC = () => {
       </div>
 
       {/* 3. شريط كبسولات الأقسام (Pills Sub-Navigation Bar المستوحى حرفياً من المرجع بألوان PharmaClick) */}
-      <nav className="border-t border-slate-100 bg-slate-50/70 hidden md:block overflow-x-auto no-scrollbar">
+      <nav className="border-t border-slate-100 bg-slate-50/70 hidden md:block relative z-30">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between text-xs font-semibold gap-3">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-            {NAV_ITEMS.map((item, idx) => {
-              const isActive = item.isHome ? pathname === "/" : pathname === item.href;
-              return (
-                <Link
-                  key={idx}
-                  href={item.href}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap cursor-pointer text-xs font-bold ${
-                    isActive
-                      ? "bg-brand-teal text-white shadow-xs"
-                      : "text-slate-600 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
-                  }`}
-                >
-                  <span>{item.label}</span>
-                  {item.hasBadge && (
-                    <span className="bg-brand-green text-white text-[9px] font-black px-1.5 py-0.5 rounded-full tracking-wider">
-                      {item.hasBadge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
+          <Suspense fallback={<div className="h-8 w-80 bg-slate-100 rounded-full animate-pulse" />}>
+            <NavigationPills />
+          </Suspense>
 
           <div className="flex items-center gap-3 shrink-0">
             <Link
-              href="/pharmacy-location"
+              href="/contact"
               className="flex items-center gap-1.5 text-brand-teal hover:text-brand-deep font-bold transition-colors"
             >
-              <MapPin className="w-3.5 h-3.5 text-brand-turquoise" />
-              <span>موقعنا وفروعنا</span>
+              <Phone className="w-3.5 h-3.5 text-brand-turquoise" />
+              <span>{t("contactUs")}</span>
             </Link>
           </div>
         </div>
@@ -376,55 +586,26 @@ export const Header: React.FC = () => {
 
       {/* 4. القائمة المنسدلة للهواتف */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <Link
-              href="/prescription"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 p-3 bg-teal-50 text-brand-deep rounded-2xl font-bold text-sm border border-teal-100"
-            >
-              <div className="w-8 h-8 rounded-xl bg-brand-green text-white flex items-center justify-center shrink-0">
-                <FileText className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-brand-deep">تحضير وصفة مسبقاً</div>
-                <div className="text-[11px] text-slate-500 font-normal">
-                  استلام مباشر (نطاق 5 كم)
-                </div>
-              </div>
-            </Link>
-
-            <Link
-              href="/inquiry"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 p-3 bg-emerald-50 text-brand-deep rounded-2xl font-bold text-sm border border-emerald-100"
-            >
-              <div className="w-8 h-8 rounded-xl bg-brand-teal text-white flex items-center justify-center shrink-0">
-                <HelpCircle className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-brand-deep">استفسار عن دواء</div>
-                <div className="text-[11px] text-slate-500 font-normal">
-                  بالاسم أو صورة العلبة رد فوري
-                </div>
-              </div>
-            </Link>
+        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-3 animate-in fade-in slide-from-top-2 duration-200">
+          {/* مبدل اللغة للهواتف */}
+          <div className="pb-2 border-b border-slate-100">
+            <LanguageSwitcher variant="drawer" />
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs font-bold text-slate-700 pt-1">
-            <Link
-              href="/category/medicines"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
-            >
-              الأدوية والاستفسارات
-            </Link>
             <Link
               href="/category/skincare"
               onClick={() => setMobileMenuOpen(false)}
               className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
             >
               العناية بالبشرة
+            </Link>
+            <Link
+              href="/category/sun-protection"
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
+            >
+              واقيات الشمس
             </Link>
             <Link
               href="/category/vitamins"
@@ -441,29 +622,51 @@ export const Header: React.FC = () => {
               الأم والرضيع
             </Link>
             <Link
-              href="/promotions"
+              href="/category/devices"
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
+            >
+              الأجهزة والمعدات
+            </Link>
+            <Link
+              href="/brands"
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
+            >
+              الماركات المعتمدة
+            </Link>
+            <Link
+              href="/offers"
               onClick={() => setMobileMenuOpen(false)}
               className="col-span-2 p-2.5 bg-emerald-50 text-brand-green rounded-xl text-center font-black flex items-center justify-center gap-1.5"
             >
               <Percent className="w-3.5 h-3.5" />
-              <span>العروض والتخفيضات الحصرية</span>
+              <span>{t("offersAndDiscounts")}</span>
             </Link>
           </div>
 
           <div className="pt-2 border-t border-slate-100 flex justify-between text-xs text-slate-600 font-medium">
-            <Link href="/pharmacy-location" onClick={() => setMobileMenuOpen(false)}>
-              موقعنا وفروعنا
+            <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
+              {t("contactUs")}
             </Link>
             <Link href="/track-order" onClick={() => setMobileMenuOpen(false)}>
-              تتبع طلبيتي
+              {t("trackOrder")}
             </Link>
-            <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
-              اتصل بنا
+            <Link href="/products" onClick={() => setMobileMenuOpen(false)}>
+              {t("allProducts")}
             </Link>
           </div>
         </div>
       )}
     </header>
+  );
+};
+
+export const Header: React.FC = () => {
+  return (
+    <Suspense fallback={<header className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-xs h-20" />}>
+      <HeaderContent />
+    </Suspense>
   );
 };
 

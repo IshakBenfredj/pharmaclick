@@ -41,6 +41,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ProductCard, ProductData } from "@/components/ui/ProductCard";
 import { Button } from "@/components/ui/Button";
 import { BannerCarousel } from "@/components/home/BannerCarousel";
+import { DynamicMarketingSections } from "@/components/home/DynamicMarketingSections";
 
 // منتجات تجريبية واقعية للسوق الجزائري
 const BEST_SELLERS: ProductData[] = [
@@ -122,18 +123,18 @@ const BEST_SELLERS: ProductData[] = [
 
 const CATEGORIES = [
   {
-    id: "medicines",
-    name: "الأدوية والاستفسارات",
-    count: "+250 صنف",
-    image:
-      "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=350&auto=format&fit=crop&q=80",
-  },
-  {
     id: "skincare",
     name: "العناية بالبشرة",
     count: "+180 منتج",
     image:
       "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=350&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "sun-protection",
+    name: "واقيات الشمس",
+    count: "+85 منتج",
+    image:
+      "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=350&auto=format&fit=crop&q=80",
   },
   {
     id: "vitamins",
@@ -202,12 +203,14 @@ export default function HomePage() {
                 {/* شارة التميز */}
                 <div className="inline-flex items-center gap-2 bg-teal-50 text-brand-teal border border-brand-teal/20 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-tight shadow-2xs">
                   <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
-                  <span>صحتك أولويتنا • Your Health, Our Priority</span>
+                  <span>
+                    عنايتك وصحتك أولويتنا • Your Health & Beauty, Our Priority
+                  </span>
                 </div>
 
                 {/* العنوان الرئيسي */}
                 <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-black text-brand-deep leading-[1.15] tracking-tight">
-                  صحتك وعافيتك،{" "}
+                  راحتك وعافيتك،{" "}
                   <span className="text-gradient-pharma inline-block">
                     تصلك حتى باب بيتك.
                   </span>
@@ -215,9 +218,9 @@ export default function HomePage() {
 
                 {/* النص التوضيحي */}
                 <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal max-w-xl">
-                  مستحضرات عناية ومنتجات صحية أصلية 100%، ماركات عالمية موثوقة
-                  ورعاية متخصصة تصلك أينما كنت في الجزائر مع إمكانية تحضير
-                  الوصفات مسبقاً.
+                  مستحضرات عناية ومنتجات صحية أصلية 100%، ماركات عالمية ومحلية
+                  موثوقة ورعاية متكاملة تصلك أينما كنت في الجزائر مع خدمة توصيل
+                  سريعة لكافة الـ 69 ولاية.
                 </p>
 
                 {/* 4 نقاط ثقة سريعة (Trust Badges مثل المرجع) */}
@@ -242,24 +245,24 @@ export default function HomePage() {
 
                 {/* أزرار الإجراء المزدوجة (Dual CTAs) */}
                 <div className="flex flex-wrap items-center gap-3 pt-3">
-                  <Link href="/category/skincare">
+                  <Link href="/categories">
                     <button className="bg-brand-green hover:bg-[#00B048] text-white font-extrabold text-sm px-6 py-3.5 rounded-full shadow-md shadow-brand-green/20 hover:shadow-lg transition-all duration-200 cursor-pointer flex items-center gap-2 group active:scale-95">
                       <span>تسوق المنتجات الآن</span>
                       <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                     </button>
                   </Link>
 
-                  <Link href="/prescription">
+                  <Link href="/offers">
                     <button className="border-2 border-brand-teal text-brand-deep hover:bg-brand-teal/5 font-extrabold text-sm px-6 py-3 rounded-full transition-all duration-200 cursor-pointer flex items-center gap-2 active:scale-95">
-                      <FileText className="w-4 h-4 text-brand-teal" />
-                      <span>حضّر وصفتك مسبقاً (استلام مباشر)</span>
+                      <Tag className="w-4 h-4 text-brand-teal" />
+                      <span>العروض والتخفيضات</span>
                     </button>
                   </Link>
 
-                  <Link href="/inquiry">
+                  <Link href="/contact">
                     <button className="bg-teal-50 hover:bg-teal-100 text-brand-deep border border-brand-teal/40 font-extrabold text-sm px-5 py-3 rounded-full transition-all duration-200 cursor-pointer flex items-center gap-2 active:scale-95 shadow-2xs">
-                      <HelpCircle className="w-4 h-4 text-brand-teal" />
-                      <span>استفسر عن دواء</span>
+                      <Headphones className="w-4 h-4 text-brand-teal" />
+                      <span>تواصل معنا</span>
                     </button>
                   </Link>
                 </div>
@@ -301,24 +304,21 @@ export default function HomePage() {
                 <div className="absolute w-80 sm:w-96 h-80 sm:h-96 rounded-full hero-glow-pharma pointer-events-none opacity-80" />
 
                 <div className="relative w-full max-w-md sm:max-w-lg">
-                  {/* بطاقة خدمة عائمة 1: تحضير الوصفة مسبقاً (Click & Collect) بارزة على الزاوية العلوية */}
-                  <Link
-                    href="/prescription"
-                    className="absolute -top-5 sm:-top-6 -right-2 sm:-right-4 bg-white/95 backdrop-blur-md p-3 sm:p-3.5 rounded-2xl border border-teal-100 shadow-xl flex items-center gap-3 hover:scale-103 hover:border-brand-teal transition-all duration-300 cursor-pointer max-w-60 z-20 group/float"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-teal-50 group-hover/float:bg-brand-teal group-hover/float:text-white text-brand-teal flex items-center justify-center shrink-0 transition-colors shadow-2xs">
-                      <FileText className="w-5 h-5" />
+                  {/* بطاقة خدمة عائمة 1: أصالة وجودة مضمونة */}
+                  <div className="absolute -top-5 sm:-top-6 -right-2 sm:-right-4 bg-white/95 backdrop-blur-md p-3 sm:p-3.5 rounded-2xl border border-teal-100 shadow-xl flex items-center gap-3 max-w-60 z-20 group/float">
+                    <div className="w-10 h-10 rounded-xl bg-teal-50 text-brand-teal flex items-center justify-center shrink-0 shadow-2xs">
+                      <ShieldCheck className="w-5 h-5 text-brand-green" />
                     </div>
                     <div className="text-right">
                       <div className="flex items-center gap-1.5 font-black text-brand-deep text-xs">
-                        <span>تحضير مسبق للوصفة</span>
+                        <span>منتجات أصلية 100%</span>
                         <span className="w-2 h-2 rounded-full bg-brand-green animate-ping" />
                       </div>
                       <span className="text-[10px] text-slate-500 font-medium block">
-                        استلام مباشر • نطاق 5 كم
+                        مباشرة من كبرى المخابر المعتمدة
                       </span>
                     </div>
-                  </Link>
+                  </div>
 
                   {/* حاوية الصورة الرسمية الرئيسية */}
                   <div className="relative rounded-3xl overflow-hidden border border-slate-100 shadow-2xl bg-white group">
@@ -326,7 +326,7 @@ export default function HomePage() {
                     <div className="relative aspect-4/3 w-full overflow-hidden bg-slate-100">
                       <img
                         src="/images/pharmacy-hero.jpg"
-                        alt="بودشيش • استشارة ورعاية صحية معتمدة"
+                        alt="PharmaClick • رعاية وعناية متكاملة"
                         className="w-full h-full object-cover object-top group-hover:scale-103 transition-transform duration-700"
                       />
                       {/* تدرج لوني لطيف لدمج النصوص والتفاصيل */}
@@ -343,7 +343,7 @@ export default function HomePage() {
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-brand-green animate-pulse" />
                           <span className="text-[11px] font-bold text-teal-200">
-                            مركز بودشيش • PharmaClick المعتمد
+                            متجر PharmaClick المعتمد
                           </span>
                         </div>
                         <h4 className="text-sm sm:text-base font-black leading-tight drop-shadow-xs">
@@ -363,11 +363,11 @@ export default function HomePage() {
                       </Link>
 
                       <Link
-                        href="/prescription"
+                        href="/category/haircare"
                         className="p-2.5 rounded-xl bg-emerald-50/70 hover:bg-brand-green hover:text-white text-brand-green font-extrabold transition-all flex flex-col items-center gap-1 border border-emerald-100/70 shadow-2xs group/btn"
                       >
-                        <FileText className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
-                        <span className="text-[11px]">تحضير وصفة</span>
+                        <Scissors className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                        <span className="text-[11px]">العناية بالشعر</span>
                       </Link>
 
                       <Link
@@ -550,7 +550,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 6. لافتة رفع الوصفة الطبية الكبرى (Upload Prescription Banner المطابقة حرفياً للمرجع) */}
+        {/* الأقسام الترويجية التفاعلية المرتبة من لوحة الإدارة */}
+        <DynamicMarketingSections />
+
+        {/* 6. لافتة التوصيل الشامل والعناية الفائقة (69 Wilayas & Beauty Delivery Banner) */}
         <section className="max-w-7xl mx-auto px-4">
           <div className="relative rounded-3xl overflow-hidden shadow-lg bg-linear-to-r from-brand-deep via-brand-teal to-brand-turquoise p-6 sm:p-10 text-white">
             {/* عناصر خلفية تزيينية */}
@@ -564,55 +567,55 @@ export default function HomePage() {
               <div className="md:col-span-8 space-y-3.5 text-right">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3.5 py-1 rounded-full text-xs font-bold text-emerald-200">
-                    <FileText className="w-3.5 h-3.5 text-brand-lime" />
-                    خدمة التحضير المسبق (Click & Collect)
+                    <Truck className="w-3.5 h-3.5 text-brand-lime" />
+                    توصيل سريع ومضمون
                   </span>
                   <span className="inline-flex items-center gap-1 bg-brand-deep/60 backdrop-blur-md px-3 py-1 rounded-full text-[11px] font-bold text-teal-100 border border-white/10">
-                    <MapPin className="w-3 h-3 text-brand-lime" />
-                    متاحة في محيط 5 كم فقط
+                    <CheckCircle2 className="w-3 h-3 text-brand-lime" />
+                    تغطية كاملة لكافة الـ 69 ولاية في الجزائر 🇩🇿
                   </span>
                 </div>
 
                 <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight">
-                  حضّر وصفتك مسبقاً واستلمها جاهزة دون انتظار
+                  مستحضرات العناية والصحة الأصلية حتى باب منزلك
                 </h3>
 
                 <p className="text-xs sm:text-sm text-slate-100 max-w-xl leading-relaxed">
-                  التقط صورة لروشتتك الطبية وسيقوم الأخصائي بمراجعتها وتجهيزها
-                  مسبقاً لتجدها معبأة بانتظارك فور وصولك لتفادي طابور الانتظار
-                  (استلام مباشر من المقر - لا يوجد توصيل للأدوية وفقاً للقانون).
+                  تصفح آلاف المستحضرات المعتمدة من كبرى الماركات العالمية
+                  والمحلية في العناية بالبشرة والشعر، الفيتامينات، ومستلزمات
+                  الأم والطفل مع إمكانية الدفع عند الاستلام.
                 </p>
 
                 <div className="flex flex-wrap items-center gap-3 pt-2">
-                  <Link href="/prescription">
+                  <Link href="/categories">
                     <button className="bg-white hover:bg-slate-100 text-brand-deep font-black text-sm px-6 py-3.5 rounded-full shadow-lg transition-all duration-200 cursor-pointer flex items-center gap-2 group active:scale-95">
-                      <FileText className="w-4 h-4 text-brand-green" />
-                      <span>فحص المسافة وتحضير الوصفة</span>
+                      <ShoppingBag className="w-4 h-4 text-brand-green" />
+                      <span>تصفح كافة الأقسام</span>
                       <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                     </button>
                   </Link>
 
-                  <Link href="/pharmacy-location">
+                  <Link href="/contact">
                     <button className="bg-white/15 hover:bg-white/25 text-white font-bold text-xs px-4 py-3 rounded-full backdrop-blur-md border border-white/20 transition-all flex items-center gap-2 cursor-pointer">
-                      <MapPin className="w-3.5 h-3.5 text-brand-lime" />
-                      <span>موقعنا وفروعنا على الخريطة</span>
+                      <Headphones className="w-3.5 h-3.5 text-brand-lime" />
+                      <span>تواصل مع فريق الدعم</span>
                     </button>
                   </Link>
                 </div>
               </div>
 
-              {/* بطاقة توضيحية ثلاثية الأبعاد للوصفة الطبية */}
+              {/* بطاقة توضيحية ثلاثية الأبعاد */}
               <div className="md:col-span-4 flex items-center justify-center">
                 <div className="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-3xl text-center space-y-3 max-w-xs w-full shadow-inner">
                   <div className="w-16 h-16 rounded-2xl bg-white text-brand-teal flex items-center justify-center mx-auto shadow-md">
                     <ShieldCheck className="w-9 h-9 text-brand-green" />
                   </div>
                   <div className="font-black text-base">
-                    سرية وأمان طبي 100%
+                    أصالة وجودة مضمونة 100%
                   </div>
                   <p className="text-[11px] text-slate-200">
-                    يتم التحقق من الوصفات حصرياً من طرف أخصائي مرخص ومعتمد وفق
-                    القانون الجزائري
+                    كافة المنتجات أصلية ومطابقة لأعلى معايير السلامة والمواصفات
+                    المعتمدة
                   </p>
                 </div>
               </div>
@@ -620,22 +623,22 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 7. قسم الخدمات الصحية والرعاية (Healthcare Services كما في المرجع) */}
+        {/* 7. قسم الخدمات والعناية المتميزة */}
         <section id="services" className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-xl sm:text-2xl font-black text-brand-deep">
-                خدمات الرعاية والصحة
+                خدمات العناية والتسوق المعتمد
               </h2>
               <p className="text-xs text-slate-500">
-                حلول صحية متكاملة لراحتك وسلامة عائلتك
+                حلول رقمية متكاملة لراحتك وسلامة عائلتك
               </p>
             </div>
             <Link
-              href="/pharmacy-location"
+              href="/contact"
               className="text-xs sm:text-sm font-bold text-brand-teal hover:text-brand-deep transition-colors flex items-center gap-1"
             >
-              <span>موقعنا وفروعنا على الخريطة</span>
+              <span>تواصل مع فريق الدعم</span>
               <ChevronLeft className="w-4 h-4" />
             </Link>
           </div>
@@ -647,11 +650,11 @@ export default function HomePage() {
                 <Headphones className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-brand-deep text-sm">
-                استشارة متخصصة مباشرة
+                استشارة عناية مباشرة
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                تحدث مع المستشار الصحي عبر واتساب أو الهاتف للاستفسار حول
-                الجرعات والإرشادات السليمة.
+                تحدث مع مستشار العناية عبر واتساب أو الهاتف لمساعدتك في اختيار
+                الروتين المناسب لبشرتك.
               </p>
               <a
                 href="https://wa.me/213541790205"
@@ -664,65 +667,65 @@ export default function HomePage() {
               </a>
             </div>
 
-            {/* 2. استفسار عن دواء */}
+            {/* 2. شحن لكافة الـ 69 ولاية */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 hover:border-brand-teal/40 card-hover-effect space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-brand-green flex items-center justify-center">
-                <Search className="w-6 h-6" />
+                <Truck className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-brand-deep text-sm">
-                استفسار عن توفر دواء
+                توصيل لـ 69 ولاية
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                هل تبحث عن دواء نادر أو غير متوفر؟ أرسل اسمه وسنبحث عنه ونوفره
-                لك بأسرع وقت.
+                شحن سريع وموثوق يصلك حتى باب منزلك أو عبر مكاتب التوزيع في جميع
+                ولايات الوطن دون استثناء.
               </p>
               <Link
-                href="/drug-inquiry"
+                href="/shipping-policy"
                 className="text-xs font-bold text-brand-green hover:underline flex items-center gap-1 pt-1"
               >
-                <span>استعلم الآن</span>
+                <span>تفاصيل الشحن والتوصيل</span>
                 <ChevronLeft className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            {/* 3. تحضير الوصفة مسبقاً (Click & Collect) */}
+            {/* 3. منتجات أصلية 100% */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 hover:border-brand-teal/40 card-hover-effect space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-teal-50 text-brand-teal flex items-center justify-center">
-                <FileText className="w-6 h-6" />
+                <ShieldCheck className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-brand-deep text-sm">
-                تحضير الوصفة مسبقاً (Click & Collect)
+                أصالة وجودة مضمونة 100%
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                وفر وقتك وأرسل وصفتك لتجد أدويتك جاهزة ومعبأة فور حضورك دون
-                انتظار (نطاق 5 كم).
+                نضمن لك مستحضرات معتمدة ومفحوصة مخبرياً مستوردة مباشرة من
+                الوكلاء والموزعين الرسميين.
               </p>
               <Link
-                href="/prescription"
+                href="/brands"
                 className="text-xs font-bold text-brand-teal hover:text-brand-deep flex items-center gap-1 pt-1"
               >
-                <span>حضّر وصفتك الآن</span>
+                <span>استكشف الماركات المعتمدة</span>
                 <ChevronLeft className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            {/* 4. إرشادات الاستخدام الآمن */}
+            {/* 4. دفع آمن عند الاستلام */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 hover:border-brand-teal/40 card-hover-effect space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
                 <HeartPulse className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-brand-deep text-sm">
-                إرشادات الاستخدام الآمن
+                دفع آمن عند الاستلام
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                نصائح طبية موثوقة لحفظ الأدوية وطريقة استخدام مستحضرات العناية
-                بالبشرة.
+                تسوق بكل راحة واطمئنان؛ ادفع نقداً بعد استلام طلبيتك ومعاينة
+                المنتجات بكل شفافية.
               </p>
               <Link
-                href="/promotions"
+                href="/faq"
                 className="text-xs font-bold text-amber-700 hover:underline flex items-center gap-1 pt-1"
               >
-                <span>اكتشف النصائح</span>
+                <span>الأسئلة الشائعة</span>
                 <ChevronLeft className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -732,7 +735,7 @@ export default function HomePage() {
           <div className="mt-4 bg-slate-50 rounded-2xl border border-slate-200/70 p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-slate-600">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-brand-green shrink-0" />
-              <span>مقر معتمد ومرخص رسمياً في الجزائر</span>
+              <span>متجر إلكتروني معتمد رسمياً في الجزائر</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-brand-teal shrink-0" />
@@ -755,10 +758,10 @@ export default function HomePage() {
             {/* النشرة البريدية */}
             <div className="md:col-span-6 space-y-2">
               <h3 className="text-lg font-black text-brand-deep">
-                اشترك في نشرتنا الطبية والعروض
+                اشترك في نشرتنا البريدية وتصلك أحدث العروض
               </h3>
               <p className="text-xs text-slate-500">
-                احصل على تخفيضات حصرية ونصائح صحية أسبوعية من فريقنا مباشرة في
+                احصل على تخفيضات حصرية ونصائح عناية أسبوعية من فريقنا مباشرة في
                 بريدك.
               </p>
               <form onSubmit={handleSubscribe} className="flex gap-2 pt-2">
@@ -790,7 +793,7 @@ export default function HomePage() {
               </h3>
               <p className="text-xs text-slate-500">
                 تصفح بسرعة فائقة وبدون حاجة للتحميل من Google Play أو App Store،
-                واطلب أدويتك بنقرة واحدة.
+                واطلب مستحضراتك بنقرة واحدة.
               </p>
               <div className="pt-1">
                 <button
