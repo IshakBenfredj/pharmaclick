@@ -1,113 +1,179 @@
-import React from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { ProductCard } from "@/components/ui/ProductCard";
-import { MOCK_BRANDS, MOCK_PRODUCTS } from "@/lib/data/mockData";
-import { ChevronLeft, Globe } from "lucide-react";
+import { BrandDetailClient } from "@/components/brands/BrandDetailClient";
+import { connectToDatabase } from "@/lib/mongodb";
+import { Brand, Product } from "@/models";
+import { MOCK_BRANDS, MOCK_PRODUCTS, MockBrand } from "@/lib/data/mockData";
 
 interface BrandDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function BrandDetailPage({ params }: BrandDetailPageProps) {
+export async function generateMetadata({ params }: BrandDetailPageProps) {
   const { slug } = await params;
-  const brand = MOCK_BRANDS.find((b) => b.slug === slug || b._id === slug);
+  let brandName = "العلامة التجارية";
+  let description =
+    "تصفح مستحضرات العلامة التجارية المعتمدة في PharmaClick مع توصيل لـ 69 ولاية.";
+
+  if (process.env.MONGODB_URI) {
+    try {
+      await connectToDatabase();
+      const bDoc = await Brand.findOne({
+        $or: [{ slug }, { _id: slug.match(/^[0-9a-fA-F]{24}$/) ? slug : null }],
+        isActive: { $ne: false },
+      }).lean();
+
+      if (bDoc) {
+        brandName = bDoc.name;
+        if (bDoc.description) description = bDoc.description;
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  if (brandName === "العلامة التجارية") {
+    const mockBrand = MOCK_BRANDS.find(
+      (b) => b.slug === slug || b._id === slug,
+    );
+    if (mockBrand) {
+      brandName = mockBrand.name;
+      if (mockBrand.description) description = mockBrand.description;
+    }
+  }
+
+  const title = `${brandName} | PharmaClick`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
+
+export default async function BrandDetailPage({
+  params,
+}: BrandDetailPageProps) {
+  const { slug } = await params;
+  let brand: MockBrand | null = null;
+  let products: any[] = [];
+
+  // 1. محاولة جلب الماركة ومنتجاتها من قاعدة بيانات MongoDB
+  if (process.env.MONGODB_URI) {
+    try {
+      await connectToDatabase();
+
+      const bDoc: any = await Brand.findOne({
+        $or: [{ slug }, { _id: slug.match(/^[0-9a-fA-F]{24}$/) ? slug : null }],
+        isActive: { $ne: false },
+      }).lean();
+
+      if (bDoc) {
+        brand = {
+          _id: bDoc._id.toString(),
+          name: bDoc.name,
+          nameAr: bDoc.nameAr || bDoc.name,
+          nameFr: bDoc.nameFr || "",
+          nameEn: bDoc.nameEn || "",
+          slug: bDoc.slug,
+          logoUrl: bDoc.logoUrl || "/images/default-brand.webp",
+          description: bDoc.description || "",
+          descriptionFr: bDoc.descriptionFr || "",
+          descriptionEn: bDoc.descriptionEn || "",
+          countryOfOrigin: bDoc.countryOfOrigin || "",
+          countryOfOriginFr: bDoc.countryOfOriginFr || "",
+          countryOfOriginEn: bDoc.countryOfOriginEn || "",
+          isFeatured: Boolean(bDoc.isFeatured),
+        };
+
+        const dbProds = await Product.find({
+          $or: [{ brand: bDoc._id }, { brand: bDoc.name }],
+          isOnlineVisible: { $ne: false },
+        })
+          .populate("category", "nameAr nameFr slug")
+          .sort({ orderCount: -1, createdAt: -1 })
+          .lean();
+
+        if (dbProds && dbProds.length > 0) {
+          products = dbProds.map((p: any) => ({
+            _id: p._id.toString(),
+            name: p.name,
+            nameAr: p.nameAr || p.name,
+            nameFr: p.nameFr || "",
+            nameEn: p.nameEn || "",
+            slug: p.slug,
+            brand: bDoc.name,
+            price: p.price,
+            originalPrice: p.originalPrice,
+            discountPercentage: p.discountPercentage,
+            image: p.images?.[0]?.url || "/images/default-prod.webp",
+            category:
+              p.category?.nameAr ||
+              (typeof p.category === "string" ? p.category : "مستحضرات معتمدة"),
+            inStock: p.inStock ?? true,
+            sizeOrVolume: p.shortDescription || p.sizeOrVolume || "",
+          }));
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching brand details from MongoDB:", err);
+    }
+  }
+
+  // 2. بديل احتياطي متكامل من MOCK_BRANDS
+  if (!brand) {
+    brand = MOCK_BRANDS.find((b) => b.slug === slug || b._id === slug) || null;
+  }
 
   if (!brand) {
     notFound();
   }
 
-  const products = MOCK_PRODUCTS.filter(
-    (p) => p.brandId === brand._id || p.brand.toLowerCase() === brand.name.toLowerCase()
+  // دمج أو استكمال المنتجات من MOCK_PRODUCTS إذا كانت النتيجة فارغة أو لتطعيم القائمة
+  const mockProds = MOCK_PRODUCTS.filter(
+    (p) =>
+      p.brandId === brand!._id ||
+      p.brand.toLowerCase() === brand!.name.toLowerCase(),
   );
+
+  for (const mp of mockProds) {
+    const alreadyExists = products.some(
+      (item) => item.slug === mp.slug || item._id === mp._id,
+    );
+    if (!alreadyExists) {
+      products.push({
+        _id: mp._id,
+        name: mp.name,
+        nameAr: mp.nameAr || mp.name,
+        nameFr: mp.nameFr || "",
+        nameEn: mp.nameEn || "",
+        slug: mp.slug,
+        brand: mp.brand,
+        price: mp.price,
+        originalPrice: mp.originalPrice,
+        discountPercentage: mp.discountPercentage,
+        image: mp.images?.[0]?.url || "/images/default-prod.webp",
+        category: mp.category,
+        inStock: mp.inStock,
+        sizeOrVolume: mp.sizeOrVolume,
+      });
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Header />
-
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* مسار التنقل */}
-        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-          <Link href="/" className="hover:text-brand-deep transition-colors">
-            الرئيسية
-          </Link>
-          <ChevronLeft className="w-3.5 h-3.5 text-slate-400" />
-          <Link href="/brands" className="hover:text-brand-deep transition-colors">
-            الماركات
-          </Link>
-          <ChevronLeft className="w-3.5 h-3.5 text-slate-400" />
-          <span className="font-bold text-brand-deep">{brand.name}</span>
-        </div>
-
-        {/* ترويسة الماركة */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs mb-8 flex flex-col sm:flex-row items-center gap-6 text-right">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-slate-50 border border-slate-100 p-3 flex items-center justify-center shrink-0">
-            <img
-              src={brand.logoUrl}
-              alt={brand.name}
-              className="max-h-full max-w-full object-contain"
-            />
-          </div>
-
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900">
-                {brand.name}
-              </h1>
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                <Globe className="w-3.5 h-3.5 text-brand-teal" />
-                <span>{brand.countryOfOrigin}</span>
-              </span>
-            </div>
-            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-3">
-              {brand.description}
-            </p>
-            <span className="text-xs font-bold text-brand-teal">
-              {products.length} مستحضر معتمد متاح للشراء
-            </span>
-          </div>
-        </div>
-
-        {/* شبكة المستحضرات */}
-        {products.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {products.map((p) => (
-              <ProductCard
-                key={p._id}
-                product={{
-                  _id: p._id,
-                  name: p.name,
-                  slug: p.slug,
-                  brand: p.brand,
-                  price: p.price,
-                  originalPrice: p.originalPrice,
-                  discountPercentage: p.discountPercentage,
-                  image: p.images[0]?.url || "",
-                  category: p.category,
-                  inStock: p.inStock,
-                  sizeOrVolume: p.sizeOrVolume,
-                }}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white rounded-3xl p-12 text-center border border-slate-100 my-8">
-            <p className="text-slate-500 text-sm mb-4">
-              لا توجد مستحضرات معروضة حالياً لهذه العلامة التجارية.
-            </p>
-            <Link
-              href="/brands"
-              className="inline-flex items-center gap-2 text-xs font-bold bg-brand-deep text-white px-5 py-2.5 rounded-full hover:bg-brand-teal transition-colors"
-            >
-              <span>العودة لجميع الماركات</span>
-              <ChevronLeft className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
-      </main>
-
+      <BrandDetailClient brand={brand} products={products} />
       <Footer />
     </div>
   );

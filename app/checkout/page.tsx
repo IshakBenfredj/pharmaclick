@@ -15,10 +15,12 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
+  ArrowLeft,
   Lock,
   Package,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   ALGERIA_WILAYAS,
   calculateShippingFee,
@@ -37,6 +39,8 @@ export default function CheckoutPage() {
     isFreeShippingEnabled,
     freeShippingThreshold,
   } = useCart();
+
+  const { t, direction, language } = useLanguage();
 
   // Form states
   const [fullName, setFullName] = useState("");
@@ -60,13 +64,21 @@ export default function CheckoutPage() {
   });
   const totalAmount = subtotal + shippingFee;
 
+  const ArrowNext = direction === "rtl" ? ArrowLeft : ArrowRight;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
 
     // Validations
     if (!fullName.trim() || fullName.trim().length < 3) {
-      setErrorMessage("يرجى إدخال الاسم واللقب بشكل صحيح (على الأقل 3 أحرف)");
+      setErrorMessage(
+        language === "fr"
+          ? "Veuillez entrer votre nom complet (au moins 3 caractères)"
+          : language === "en"
+          ? "Please enter your full name (at least 3 characters)"
+          : "يرجى إدخال الاسم واللقب بشكل صحيح (على الأقل 3 أحرف)"
+      );
       return;
     }
 
@@ -74,7 +86,11 @@ export default function CheckoutPage() {
     const phoneRegex = /^(0)(5|6|7)[0-9]{8}$/;
     if (!phoneRegex.test(cleanPhone)) {
       setErrorMessage(
-        "يرجى إدخال رقم هاتف جزائري صحيح مكون من 10 أرقام (يبدأ بـ 05 أو 06 أو 07)",
+        language === "fr"
+          ? "Veuillez entrer un numéro de téléphone algérien valide (10 chiffres commençant par 05, 06 ou 07)"
+          : language === "en"
+          ? "Please enter a valid Algerian phone number (10 digits starting with 05, 06 or 07)"
+          : "يرجى إدخال رقم هاتف جزائري صحيح مكون من 10 أرقام (يبدأ بـ 05 أو 06 أو 07)"
       );
       return;
     }
@@ -83,14 +99,24 @@ export default function CheckoutPage() {
       const cleanAlt = alternativePhone.trim().replace(/\s+/g, "");
       if (!phoneRegex.test(cleanAlt)) {
         setErrorMessage(
-          "رقم الهاتف الاحتياطي غير صالح. يرجى التأكد منه أو تركه فارغاً.",
+          language === "fr"
+            ? "Le numéro secondaire n'est pas valide. Vérifiez-le ou laissez-le vide."
+            : language === "en"
+            ? "Secondary phone is invalid. Please verify or leave it empty."
+            : "رقم الهاتف الاحتياطي غير صالح. يرجى التأكد منه أو تركه فارغاً."
         );
         return;
       }
     }
 
     if (!commune.trim()) {
-      setErrorMessage("يرجى إدخال اسم البلدية");
+      setErrorMessage(
+        language === "fr"
+          ? "Veuillez indiquer le nom de la commune"
+          : language === "en"
+          ? "Please enter your commune / city"
+          : "يرجى إدخال اسم البلدية"
+      );
       return;
     }
 
@@ -98,13 +124,23 @@ export default function CheckoutPage() {
       deliveryType === "home" &&
       (!streetAddress.trim() || streetAddress.trim().length < 3)
     ) {
-      setErrorMessage("يرجى إدخال تفاصيل العنوان أو الحي للتوصيل المنزلي");
+      setErrorMessage(
+        language === "fr"
+          ? "Veuillez préciser votre adresse détaillée pour la livraison à domicile"
+          : language === "en"
+          ? "Please enter detailed street address for home delivery"
+          : "يرجى إدخال تفاصيل العنوان أو الحي للتوصيل المنزلي"
+      );
       return;
     }
 
     if (items.length === 0) {
       setErrorMessage(
-        "سلة مشترياتك فارغة! يرجى إضافة مستحضرات قبل إتمام الطلب.",
+        language === "fr"
+          ? "Votre panier est vide !"
+          : language === "en"
+          ? "Your cart is empty!"
+          : "سلة مشترياتك فارغة! يرجى إضافة مستحضرات قبل إتمام الطلب."
       );
       return;
     }
@@ -128,7 +164,7 @@ export default function CheckoutPage() {
             wilayaCode: selectedWilaya.code,
             wilayaName: selectedWilaya.nameAr,
             commune: commune.trim(),
-            streetAddress: streetAddress.trim() || "مكتب التوزيع",
+            streetAddress: streetAddress.trim() || (language === "ar" ? "مكتب التوزيع" : "Stop Desk"),
             deliveryType,
           },
           items: items.map((item) => ({
@@ -148,7 +184,7 @@ export default function CheckoutPage() {
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.message || "فشل في إرسال الطلب، يرجى المحاولة مرة أخرى",
+          data.message || (language === "fr" ? "Erreur de validation de la commande" : "فشل في إرسال الطلب، يرجى المحاولة مرة أخرى")
         );
       }
 
@@ -163,7 +199,7 @@ export default function CheckoutPage() {
       );
     } catch (err: any) {
       setErrorMessage(
-        err.message || "حدث خطأ في الاتصال، يرجى المحاولة مجدداً",
+        err.message || (language === "fr" ? "Erreur réseau, veuillez réessayer" : "حدث خطأ في الاتصال، يرجى المحاولة مجدداً")
       );
       setIsSubmitting(false);
     }
@@ -185,18 +221,17 @@ export default function CheckoutPage() {
             <ShoppingBag className="w-10 h-10" />
           </div>
           <h2 className="text-2xl font-bold text-slate-800">
-            لا توجد مستحضرات لإتمام الطلب
+            {t("cartEmptyTitle")}
           </h2>
           <p className="text-sm text-slate-500">
-            سلتك فارغة حالياً. يرجى تصفح المتجر وإضافة المنتجات التي ترغب في
-            طلبها.
+            {t("cartEmptyDesc")}
           </p>
           <Link
             href="/categories"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-deep text-white font-bold text-sm hover:opacity-95 transition-all shadow-md"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-deep text-white font-bold text-sm hover:opacity-95 transition-all shadow-md cursor-pointer"
           >
-            <span>تصفح المستحضرات</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>{t("allCategories")}</span>
+            <ArrowNext className="w-4 h-4" />
           </Link>
         </div>
       </div>
@@ -207,43 +242,42 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-slate-50/70 py-8 lg:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb & Title */}
-        <div className="mb-6">
+        <div className="mb-6 text-start">
           <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
             <Link href="/" className="hover:text-brand-deep transition-colors">
-              الرئيسية
+              {t("home")}
             </Link>
             <span>/</span>
             <Link
               href="/cart"
               className="hover:text-brand-deep transition-colors"
             >
-              السلة
+              {t("cart")}
             </Link>
             <span>/</span>
             <span className="text-slate-800 font-semibold">
-              إتمام الطلب والشحن
+              {t("checkoutTitle")}
             </span>
           </div>
           <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 flex items-center gap-3">
             <Lock className="w-7 h-7 text-brand-green" />
-            إتمام الطلب والدفع عند الاستلام
+            {t("checkoutTitle")}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            شحن وتوصيل سريع لكافة الـ {TOTAL_ALGERIA_WILAYAS} ولاية جزائرية مع
-            الدفع نقداً عند استلام الطرد
+            {t("checkoutCodNotice")}
           </p>
         </div>
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-3 text-sm animate-shake">
+          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-3 text-sm animate-shake text-start">
             <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-start">
             {/* Form Fields Column */}
             <div className="lg:col-span-7 space-y-6">
               {/* Step 1: Customer Contact */}
@@ -255,11 +289,8 @@ export default function CheckoutPage() {
                   <div>
                     <h2 className="font-bold text-base text-slate-900 flex items-center gap-2">
                       <User className="w-4 h-4 text-brand-deep" />
-                      معلومات الزبون الشخصية
+                      {t("checkoutPersonalTitle")}
                     </h2>
-                    <p className="text-xs text-slate-500">
-                      سنستخدم هذه البيانات للتواصل معك وتأكيد الطلب هاتفياً
-                    </p>
                   </div>
                 </div>
 
@@ -267,13 +298,13 @@ export default function CheckoutPage() {
                   {/* Full Name */}
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      الاسم واللقب الكامل{" "}
+                      {t("checkoutFullName")}{" "}
                       <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="مثال: ياسمين بلقاسم"
+                      placeholder="e.g. Yasmine Belkacem"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50/50 text-slate-800 text-sm font-medium"
@@ -283,7 +314,7 @@ export default function CheckoutPage() {
                   {/* Phone */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      رقم الهاتف (للتأكيد والشحن){" "}
+                      {t("checkoutPhone")}{" "}
                       <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -294,18 +325,15 @@ export default function CheckoutPage() {
                         placeholder="0550123456"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50/50 text-slate-800 text-sm font-bold tracking-wider text-right"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50/50 text-slate-800 text-sm font-bold tracking-wider text-start"
                       />
                     </div>
-                    <span className="text-[11px] text-slate-400 mt-1 block">
-                      10 أرقام تبدأ بـ 05، 06، أو 07
-                    </span>
                   </div>
 
                   {/* Alternative Phone */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      رقم هاتف احتياطي (اختياري)
+                      {t("checkoutAltPhone")}
                     </label>
                     <input
                       type="tel"
@@ -313,18 +341,14 @@ export default function CheckoutPage() {
                       placeholder="0661987654"
                       value={alternativePhone}
                       onChange={(e) => setAlternativePhone(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50/50 text-slate-800 text-sm font-medium text-right"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50/50 text-slate-800 text-sm font-medium text-start"
                     />
-                    <span className="text-[11px] text-slate-400 mt-1 block">
-                      في حال تعذر الوصول للرقم الأول
-                    </span>
                   </div>
 
                   {/* Email */}
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      البريد الإلكتروني (اختياري - لاستلام الفاتورة وتتبع
-                      الشحنة)
+                      {t("checkoutEmailOptional")}
                     </label>
                     <input
                       type="email"
@@ -332,7 +356,7 @@ export default function CheckoutPage() {
                       placeholder="name@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50/50 text-slate-800 text-sm font-medium text-right"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50/50 text-slate-800 text-sm font-medium text-start"
                     />
                   </div>
                 </div>
@@ -347,11 +371,8 @@ export default function CheckoutPage() {
                   <div>
                     <h2 className="font-bold text-base text-slate-900 flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-brand-teal" />
-                      عنوان الشحن والتوصيل ({TOTAL_ALGERIA_WILAYAS} ولاية)
+                      {t("checkoutAddressTitle")} ({TOTAL_ALGERIA_WILAYAS} Wilayas)
                     </h2>
-                    <p className="text-xs text-slate-500">
-                      اختر ولايتك ونوع التوصيل المفضل لديك
-                    </p>
                   </div>
                 </div>
 
@@ -359,8 +380,7 @@ export default function CheckoutPage() {
                   {/* Wilaya Dropdown */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      الولاية (قائمة الـ {TOTAL_ALGERIA_WILAYAS} ولاية جزائرية
-                      كاملة) <span className="text-red-500">*</span>
+                      {t("checkoutWilaya")} <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={wilayaCode}
@@ -369,7 +389,7 @@ export default function CheckoutPage() {
                     >
                       {ALGERIA_WILAYAS.map((w) => (
                         <option key={w.code} value={w.code}>
-                          {w.code} - {w.nameAr} ({w.nameFr})
+                          {w.code} - {language === "ar" ? w.nameAr : (w.nameFr || w.nameAr)}
                         </option>
                       ))}
                     </select>
@@ -378,8 +398,7 @@ export default function CheckoutPage() {
                   {/* Delivery Type Option */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-2">
-                      نوع التوصيل المطلوب{" "}
-                      <span className="text-red-500">*</span>
+                      {t("checkoutDeliveryType")} <span className="text-red-500">*</span>
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {/* Home Delivery */}
@@ -400,20 +419,17 @@ export default function CheckoutPage() {
                         />
                         <div className="space-y-1">
                           <span className="font-bold text-sm text-slate-900 block">
-                            التوصيل لباب المنزل
-                          </span>
-                          <span className="text-xs text-slate-500 block">
-                            يسلم الطرد مباشرة إلى عنوانك الشخصي
+                            {t("cartHomeDelivery")}
                           </span>
                           <span className="text-xs font-extrabold text-brand-deep block pt-1">
                             {isFreeShippingEnabled &&
                             freeShippingThreshold > 0 &&
                             subtotal >= freeShippingThreshold ? (
                               <span className="text-brand-green font-bold">
-                                مجاني
+                                {t("free")}
                               </span>
                             ) : (
-                              `${selectedWilaya.defaultHomeFee.toLocaleString("ar-DZ")} دج`
+                              `${selectedWilaya.defaultHomeFee.toLocaleString()} ${t("currency")}`
                             )}
                           </span>
                         </div>
@@ -437,20 +453,17 @@ export default function CheckoutPage() {
                         />
                         <div className="space-y-1">
                           <span className="font-bold text-sm text-slate-900 block">
-                            مكتب التوزيع (Stop Desk)
-                          </span>
-                          <span className="text-xs text-slate-500 block">
-                            الاستلام من مكتب شركة الشحن في ولايتك
+                            {t("cartDeskDelivery")}
                           </span>
                           <span className="text-xs font-extrabold text-brand-green block pt-1">
                             {isFreeShippingEnabled &&
                             freeShippingThreshold > 0 &&
                             subtotal >= freeShippingThreshold ? (
                               <span className="text-brand-green font-bold">
-                                مجاني
+                                {t("free")}
                               </span>
                             ) : (
-                              `${selectedWilaya.defaultDeskFee.toLocaleString("ar-DZ")} دج (سعر مخفض)`
+                              `${selectedWilaya.defaultDeskFee.toLocaleString()} ${t("currency")}`
                             )}
                           </span>
                         </div>
@@ -461,12 +474,12 @@ export default function CheckoutPage() {
                   {/* Commune */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      البلدية <span className="text-red-500">*</span>
+                      {t("checkoutCommune")} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="مثال: دالي إبراهيم / وهران وسط / بومرداس"
+                      placeholder="e.g. Dely Ibrahim"
                       value={commune}
                       onChange={(e) => setCommune(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50/50 text-slate-800 text-sm font-medium"
@@ -477,13 +490,12 @@ export default function CheckoutPage() {
                   {deliveryType === "home" && (
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                        العنوان التفصيلي / الحي / رقم العمارة{" "}
-                        <span className="text-red-500">*</span>
+                        {t("checkoutStreet")} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         required={deliveryType === "home"}
-                        placeholder="مثال: حي 500 مسكن، عمارة ب، شقة 14"
+                        placeholder="Street, Building No, Apt"
                         value={streetAddress}
                         onChange={(e) => setStreetAddress(e.target.value)}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50/50 text-slate-800 text-sm font-medium"
@@ -496,8 +508,7 @@ export default function CheckoutPage() {
                     <span className="flex items-center gap-2">
                       <Truck className="w-4 h-4 text-brand-teal" />
                       <span>
-                        المدة التقديرية للتسليم إلى{" "}
-                        <strong>{selectedWilaya.nameAr}</strong>:
+                        <strong>{language === "ar" ? selectedWilaya.nameAr : (selectedWilaya.nameFr || selectedWilaya.nameAr)}</strong>:
                       </span>
                     </span>
                     <strong className="text-brand-deep font-bold">
@@ -516,11 +527,8 @@ export default function CheckoutPage() {
                   <div>
                     <h2 className="font-bold text-base text-slate-900 flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-brand-green" />
-                      طريقة الدفع المعتمدة
+                      {t("trustCod")}
                     </h2>
-                    <p className="text-xs text-slate-500">
-                      الدفع آمن ومريح لكافة الزبائن
-                    </p>
                   </div>
                 </div>
 
@@ -530,12 +538,10 @@ export default function CheckoutPage() {
                   </div>
                   <div className="space-y-1">
                     <h3 className="font-extrabold text-sm text-slate-900">
-                      الدفع نقدًا عند الاستلام (Cash on Delivery - COD)
+                      {t("trustCod")}
                     </h3>
                     <p className="text-xs text-slate-600 leading-relaxed">
-                      لا يلزمك أي دفع مسبق أو بطاقة بنكية. ستدفع المبلغ الإجمالي
-                      نقدًا لعون التوصيل فقط عند استلام طردك بيدك بعد تفقد سلامة
-                      المحتويات.
+                      {t("checkoutCodNotice")}
                     </p>
                   </div>
                 </div>
@@ -545,11 +551,11 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
                 <label className="text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-slate-400" />
-                  ملاحظات إضافية حول التوصيل (اختياري):
+                  {t("checkoutNotes")}
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="مثال: يرجى الاتصال قبل الوصول بنصف ساعة، أو التسليم بعد العصر..."
+                  placeholder="..."
                   value={customerNotes}
                   onChange={(e) => setCustomerNotes(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50/50 text-slate-800 text-sm font-medium"
@@ -563,13 +569,13 @@ export default function CheckoutPage() {
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
                     <Package className="w-4 h-4 text-brand-deep" />
-                    مراجعة الطلبية ({totalItemsCount} مستحضرات)
+                    {t("checkoutOrderItems")} ({totalItemsCount})
                   </h3>
                   <Link
                     href="/cart"
                     className="text-xs text-brand-teal hover:text-brand-deep font-semibold"
                   >
-                    تعديل السلة
+                    {t("cart")}
                   </Link>
                 </div>
 
@@ -604,8 +610,8 @@ export default function CheckoutPage() {
                           </p>
                         )}
                         <p className="text-xs font-semibold text-slate-600 mt-0.5">
-                          {(item.price * item.quantity).toLocaleString("ar-DZ")}{" "}
-                          دج
+                          {(item.price * item.quantity).toLocaleString()}{" "}
+                          {t("currency")}
                         </p>
                       </div>
                     </div>
@@ -615,38 +621,36 @@ export default function CheckoutPage() {
                 {/* Breakdown Costs */}
                 <div className="pt-3 border-t border-slate-100 space-y-2.5 text-xs text-slate-600">
                   <div className="flex items-center justify-between">
-                    <span>مجموع المنتجات:</span>
+                    <span>{t("cartSubtotal")}:</span>
                     <span className="font-bold text-slate-900">
-                      {subtotal.toLocaleString("ar-DZ")} دج
+                      {subtotal.toLocaleString()} {t("currency")}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span>
-                      تكلفة التوصيل ({selectedWilaya.nameAr} -{" "}
-                      {deliveryType === "home" ? "للمنزل" : "Stop Desk"}):
+                      {t("cartShippingFee")} (
+                      {language === "ar" ? selectedWilaya.nameAr : (selectedWilaya.nameFr || selectedWilaya.nameAr)}
+                      ):
                     </span>
                     <span className="font-bold text-slate-900">
                       {shippingFee === 0 ? (
                         <span className="text-brand-green font-bold">
-                          مجاني
+                          {t("free")}
                         </span>
                       ) : (
-                        `${shippingFee.toLocaleString("ar-DZ")} دج`
+                        `${shippingFee.toLocaleString()} ${t("currency")}`
                       )}
                     </span>
                   </div>
 
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-base">
                     <span className="font-extrabold text-slate-900">
-                      المبلغ الصافي للدفع:
+                      {t("cartTotal")}:
                     </span>
-                    <div className="text-left">
+                    <div className="text-end">
                       <span className="font-black text-2xl text-brand-deep">
-                        {totalAmount.toLocaleString("ar-DZ")} دج
-                      </span>
-                      <span className="block text-[10px] text-slate-400 font-normal">
-                        تدفع نقداً فور وصول الطرد
+                        {totalAmount.toLocaleString()} {t("currency")}
                       </span>
                     </div>
                   </div>
@@ -656,16 +660,16 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4 px-6 rounded-2xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-extrabold text-base flex items-center justify-center gap-2 hover:opacity-95 shadow-xl shadow-brand-deep/20 hover:shadow-2xl active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-4 px-6 rounded-2xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-extrabold text-base flex items-center justify-center gap-2 hover:opacity-95 shadow-xl shadow-brand-deep/20 hover:shadow-2xl active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>جاري تأكيد وتسجيل طلبك...</span>
+                      <span>{t("checkoutPlacingOrder")}</span>
                     </>
                   ) : (
                     <>
-                      <span>تأكيد الطلب والدفع عند الاستلام</span>
+                      <span>{t("checkoutConfirmBtn")}</span>
                       <CheckCircle2 className="w-5 h-5" />
                     </>
                   )}
@@ -675,13 +679,11 @@ export default function CheckoutPage() {
                 <div className="pt-2 space-y-2 text-[11px] text-slate-500 border-t border-slate-100">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-brand-green shrink-0" />
-                    <span>تأكيد فوري عبر مكالمة هاتفية قبل خروج الشحنة</span>
+                    <span>{t("trust100Original")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Truck className="w-4 h-4 text-brand-teal shrink-0" />
-                    <span>
-                      توصيل سريع وآمن لجميع الـ {TOTAL_ALGERIA_WILAYAS} ولاية
-                    </span>
+                    <span>{t("trust69Wilayas")}</span>
                   </div>
                 </div>
               </div>

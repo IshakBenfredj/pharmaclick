@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Package,
   ArrowRight,
@@ -17,48 +17,55 @@ import {
   FileText,
   ShieldAlert,
   Hash,
-} from 'lucide-react';
-import { FormLabelWithHelp } from '@/components/ui';
-import { R2ImageUploader } from '@/components/admin/R2ImageUploader';
-import { MOCK_CATEGORIES, MOCK_BRANDS } from '@/lib/data/mockData';
+} from "lucide-react";
+import { FormLabelWithHelp } from "@/components/ui";
+import { R2ImageUploader } from "@/components/admin/R2ImageUploader";
+import { MOCK_CATEGORIES, MOCK_BRANDS } from "@/lib/data/mockData";
 
 export default function AdminNewProductPage() {
   const router = useRouter();
 
   // Form states
-  const [name, setName] = useState('');
-  const [nameFr, setNameFr] = useState('');
-  const [nameEn, setNameEn] = useState('');
-  const [slug, setSlug] = useState('');
-  const [category, setCategory] = useState(MOCK_CATEGORIES[0]?.nameAr || 'العناية بالبشرة');
-  const [categorySlug, setCategorySlug] = useState(MOCK_CATEGORIES[0]?.slug || 'skincare');
-  const [brand, setBrand] = useState(MOCK_BRANDS[0]?.name || 'La Roche-Posay');
-  const [price, setPrice] = useState<number>(3800);
-  const [originalPrice, setOriginalPrice] = useState<number | ''>('');
-  const [stockQuantity, setStockQuantity] = useState<number>(25);
-  const [sizeOrVolume, setSizeOrVolume] = useState('30 مل');
-  const [imageUrl, setImageUrl] = useState('/products/hyalu-b5.png');
-  const [summary, setSummary] = useState('');
-  const [shortDescriptionFr, setShortDescriptionFr] = useState('');
-  const [shortDescriptionEn, setShortDescriptionEn] = useState('');
-  const [description, setDescription] = useState('');
-  const [descriptionFr, setDescriptionFr] = useState('');
-  const [descriptionEn, setDescriptionEn] = useState('');
-  const [usageInstructions, setUsageInstructions] = useState(
-    'يوضع من 3 إلى 4 قطرات صباحاً ومساءً على بشرة نظيفة وجافة للوجه والرقبة مع التدليك اللطيف.'
+  const [name, setName] = useState("");
+  const [nameFr, setNameFr] = useState("");
+  const [nameEn, setNameEn] = useState("");
+  const [slug, setSlug] = useState("");
+  const [category, setCategory] = useState(
+    MOCK_CATEGORIES[0]?.nameAr || "العناية بالبشرة",
   );
-  const [usageInstructionsFr, setUsageInstructionsFr] = useState('');
-  const [usageInstructionsEn, setUsageInstructionsEn] = useState('');
-  const [healthWarnings, setHealthWarnings] = useState('للاستعمال الخارجي فقط. تجنب ملامسة محيط العينين.');
-  const [healthWarningsFr, setHealthWarningsFr] = useState('');
-  const [healthWarningsEn, setHealthWarningsEn] = useState('');
+  const [categorySlug, setCategorySlug] = useState(
+    MOCK_CATEGORIES[0]?.slug || "skincare",
+  );
+  const [brand, setBrand] = useState(MOCK_BRANDS[0]?.name || "La Roche-Posay");
+  const [price, setPrice] = useState<number>(3800);
+  const [originalPrice, setOriginalPrice] = useState<number | "">("");
+  const [stockQuantity, setStockQuantity] = useState<number>(25);
+  const [sizeOrVolume, setSizeOrVolume] = useState("30 مل");
+  const [imageUrl, setImageUrl] = useState("/products/hyalu-b5.png");
+  const [summary, setSummary] = useState("");
+  const [shortDescriptionFr, setShortDescriptionFr] = useState("");
+  const [shortDescriptionEn, setShortDescriptionEn] = useState("");
+  const [description, setDescription] = useState("");
+  const [descriptionFr, setDescriptionFr] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
+  const [usageInstructions, setUsageInstructions] = useState(
+    "يوضع من 3 إلى 4 قطرات صباحاً ومساءً على بشرة نظيفة وجافة للوجه والرقبة مع التدليك اللطيف.",
+  );
+  const [usageInstructionsFr, setUsageInstructionsFr] = useState("");
+  const [usageInstructionsEn, setUsageInstructionsEn] = useState("");
+  const [healthWarnings, setHealthWarnings] = useState(
+    "للاستعمال الخارجي فقط. تجنب ملامسة محيط العينين.",
+  );
+  const [healthWarningsFr, setHealthWarningsFr] = useState("");
+  const [healthWarningsEn, setHealthWarningsEn] = useState("");
   const [inStock, setInStock] = useState(true);
 
   // Status states
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(
-    null
-  );
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // Auto-generate slug from name
   const handleNameChange = (val: string) => {
@@ -67,8 +74,8 @@ export default function AdminNewProductPage() {
       const generated = val
         .trim()
         .toLowerCase()
-        .replace(/[^a-zA-Z0-9\s-]/g, '')
-        .replace(/\s+/g, '-');
+        .replace(/[^a-zA-Z0-9\s-]/g, "")
+        .replace(/\s+/g, "-");
       if (generated) setSlug(generated);
     }
   };
@@ -89,22 +96,28 @@ export default function AdminNewProductPage() {
 
     // Basic validation
     if (!name.trim()) {
-      setFeedback({ type: 'error', message: 'يرجى إدخال اسم المستحضر التجاري' });
+      setFeedback({
+        type: "error",
+        message: "يرجى إدخال اسم المستحضر التجاري",
+      });
       setIsSubmitting(false);
       return;
     }
 
     if (!price || price <= 0) {
-      setFeedback({ type: 'error', message: 'يرجى إدخال سعر صالح أكبر من الصفر' });
+      setFeedback({
+        type: "error",
+        message: "يرجى إدخال سعر صالح أكبر من الصفر",
+      });
       setIsSubmitting(false);
       return;
     }
 
     try {
       // POST to backend API
-      const res = await fetch('/api/admin/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           nameAr: name.trim(),
@@ -118,7 +131,7 @@ export default function AdminNewProductPage() {
           originalPrice: originalPrice ? Number(originalPrice) : undefined,
           stockQuantity: Number(stockQuantity) || 0,
           sizeOrVolume: sizeOrVolume.trim(),
-          imageUrl: imageUrl.trim() || '/products/hyalu-b5.png',
+          imageUrl: imageUrl.trim() || "/products/hyalu-b5.png",
           summary: summary.trim(),
           shortDescriptionFr: shortDescriptionFr.trim() || undefined,
           shortDescriptionEn: shortDescriptionEn.trim() || undefined,
@@ -138,21 +151,23 @@ export default function AdminNewProductPage() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.message || 'فشل في حفظ المستحضر في قاعدة البيانات');
+        throw new Error(
+          data.message || "فشل في حفظ المستحضر في قاعدة البيانات",
+        );
       }
 
       setFeedback({
-        type: 'success',
-        message: 'تم إضافة المستحضر وتثبيته بنجاح في قاعدة بيانات المتجر!',
+        type: "success",
+        message: "تم إضافة المستحضر وتثبيته بنجاح في قاعدة بيانات المتجر!",
       });
 
       setTimeout(() => {
-        router.push('/admin/products');
+        router.push("/admin/products");
       }, 1000);
     } catch (err: any) {
       setFeedback({
-        type: 'error',
-        message: err.message || 'حدث خطأ أثناء حفظ المستحضر',
+        type: "error",
+        message: err.message || "حدث خطأ أثناء حفظ المستحضر",
       });
     } finally {
       setIsSubmitting(false);
@@ -165,15 +180,23 @@ export default function AdminNewProductPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-            <Link href="/admin" className="hover:text-brand-deep transition-colors">
+            <Link
+              href="/admin"
+              className="hover:text-brand-deep transition-colors"
+            >
               لوحة التحكم
             </Link>
             <span>/</span>
-            <Link href="/admin/products" className="hover:text-brand-deep transition-colors">
+            <Link
+              href="/admin/products"
+              className="hover:text-brand-deep transition-colors"
+            >
               المستحضرات والمنتجات
             </Link>
             <span>/</span>
-            <span className="text-slate-800 font-semibold">إضافة مستحضر جديد</span>
+            <span className="text-slate-800 font-semibold">
+              إضافة مستحضر جديد
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-brand-deep text-white flex items-center justify-center shadow-md shadow-brand-deep/20">
@@ -182,7 +205,8 @@ export default function AdminNewProductPage() {
             إضافة مستحضر جديد للمتجر
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            املأ بيانات ومواصفات المستحضر مع إمكانية رفع الصور مباشرة عبر Cloudflare R2 Pre-signed URLs.
+            املأ بيانات ومواصفات المستحضر مع إمكانية رفع الصور مباشرة عبر
+            Cloudflare R2 Pre-signed URLs.
           </p>
         </div>
 
@@ -199,12 +223,12 @@ export default function AdminNewProductPage() {
       {feedback && (
         <div
           className={`p-4 rounded-2xl border text-xs sm:text-sm flex items-start gap-3 transition-all ${
-            feedback.type === 'success'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+            feedback.type === "success"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              : "bg-red-50 border-red-200 text-red-800"
           }`}
         >
-          {feedback.type === 'success' ? (
+          {feedback.type === "success" ? (
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           ) : (
             <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
@@ -399,7 +423,9 @@ export default function AdminNewProductPage() {
                   placeholder="مثال: 4500"
                   value={originalPrice}
                   onChange={(e) =>
-                    setOriginalPrice(e.target.value === '' ? '' : Number(e.target.value))
+                    setOriginalPrice(
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
                   }
                   className="w-full px-4 py-2.5 pl-12 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50 text-slate-900 text-sm font-extrabold"
                 />
@@ -467,7 +493,7 @@ export default function AdminNewProductPage() {
                 currentImageUrl={imageUrl}
                 onUploaded={(url) => setImageUrl(url)}
                 folder="products"
-                label={name || 'صورة المستحضر'}
+                label={name || "صورة المستحضر"}
               />
             </div>
 
@@ -613,7 +639,8 @@ export default function AdminNewProductPage() {
                     تبويب: طريقة وإرشادات الاستخدام (Usage Instructions)
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    كيفية وتوقيت تطبيق المستحضر للحصول على أفضل نتيجة صحية وجمالية.
+                    كيفية وتوقيت تطبيق المستحضر للحصول على أفضل نتيجة صحية
+                    وجمالية.
                   </p>
                 </div>
               </div>
@@ -687,7 +714,8 @@ export default function AdminNewProductPage() {
                     تبويب: التحذيرات وموانع الاستعمال (Warnings & Precautions)
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    التحذيرات الطبية والصحية (للاستعمال الخارجي فقط، تجنب العينين، الحفظ بعيداً عن الأطفال).
+                    التحذيرات الطبية والصحية (للاستعمال الخارجي فقط، تجنب
+                    العينين، الحفظ بعيداً عن الأطفال).
                   </p>
                 </div>
               </div>
@@ -758,10 +786,11 @@ export default function AdminNewProductPage() {
             <FormLabelWithHelp
               label="إتاحة المستحضر للبيع أونلاين"
               helpText="عند التفعيل، يظهر المستحضر في متجر PharmaClick فوراً ويكون قابلاً للطلب والشحن لكافة الـ 69 ولاية جزائرية."
-              badge={inStock ? 'نشط' : 'معطل'}
+              badge={inStock ? "نشط" : "معطل"}
             />
             <p className="text-xs text-slate-500">
-              يمكنك تعطيل المستحضر مؤقتاً في حال رغبت بإيقاف بيعه دون حذفه من قاعدة البيانات.
+              يمكنك تعطيل المستحضر مؤقتاً في حال رغبت بإيقاف بيعه دون حذفه من
+              قاعدة البيانات.
             </p>
           </div>
 
@@ -769,14 +798,14 @@ export default function AdminNewProductPage() {
             type="button"
             onClick={() => setInStock(!inStock)}
             className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-teal ${
-              inStock ? 'bg-brand-green' : 'bg-slate-300'
+              inStock ? "bg-brand-green" : "bg-slate-300"
             }`}
             role="switch"
             aria-checked={inStock}
           >
             <span
               className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
-                inStock ? '-translate-x-7' : 'translate-x-0'
+                inStock ? "-translate-x-7" : "translate-x-0"
               }`}
             />
           </button>
@@ -794,7 +823,7 @@ export default function AdminNewProductPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-sm shadow-lg shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+            className="px-8 py-3.5 rounded-2xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-sm shadow-lg shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting ? (
               <>

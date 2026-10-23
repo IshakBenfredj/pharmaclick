@@ -17,6 +17,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   ALGERIA_WILAYAS,
   calculateShippingFee,
@@ -39,6 +40,8 @@ export default function CartPage() {
     hasHydrated,
   } = useCart();
 
+  const { t, direction, language } = useLanguage();
+
   // Delivery estimator state
   const [selectedWilayaCode, setSelectedWilayaCode] = useState<number>(16); // Alger default
   const [deliveryType, setDeliveryType] = useState<"home" | "desk">("home");
@@ -56,6 +59,8 @@ export default function CartPage() {
   );
   const totalAmount = subtotal + shippingFee;
 
+  const ArrowNext = direction === "rtl" ? ArrowLeft : ArrowRight;
+
   if (!hasHydrated) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -68,26 +73,26 @@ export default function CartPage() {
     <div className="min-h-screen bg-slate-50/60 py-8 lg:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Header & Breadcrumb */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 text-start">
           <div>
             <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
               <Link
                 href="/"
                 className="hover:text-brand-deep transition-colors"
               >
-                الرئيسية
+                {t("home")}
               </Link>
               <span>/</span>
               <span className="text-slate-800 font-semibold">
-                سلة المشتريات
+                {t("cartTitle")}
               </span>
             </div>
             <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 flex items-center gap-3">
               <ShoppingBag className="w-7 h-7 text-brand-deep" />
-              سلة المشتريات
+              {t("cartTitle")}
               {totalItemsCount > 0 && (
                 <span className="text-sm font-semibold px-3 py-1 rounded-full bg-brand-deep/10 text-brand-deep">
-                  {totalItemsCount} مستحضر
+                  {totalItemsCount} {t("cartItemsCount")}
                 </span>
               )}
             </h1>
@@ -96,10 +101,10 @@ export default function CartPage() {
           {items.length > 0 && (
             <button
               onClick={clearCart}
-              className="inline-flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              إفراغ السلة
+              {t("cartClearAll")}
             </button>
           )}
         </div>
@@ -112,27 +117,26 @@ export default function CartPage() {
             </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-bold text-slate-900">
-                سلة مشترياتك فارغة حالياً
+                {t("cartEmptyTitle")}
               </h2>
               <p className="text-sm text-slate-500 max-w-md mx-auto">
-                لم تقم بإضافة أي مستحضرات بعد. تصفح تشكيلتنا الواسعة من منتجات
-                العناية بالبشرة، الشعر، والمكملات الغذائية الأصلية 100%.
+                {t("cartEmptyDesc")}
               </p>
             </div>
             <div className="pt-2 flex flex-wrap justify-center gap-3">
               <Link
                 href="/categories"
-                className="px-6 py-3 rounded-xl bg-linear-to-r from-brand-deep to-brand-teal text-white font-bold text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2"
+                className="px-6 py-3 rounded-xl bg-linear-to-r from-brand-deep to-brand-teal text-white font-bold text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 cursor-pointer"
               >
-                <span>تصفح الأقسام</span>
-                <ArrowLeft className="w-4 h-4" />
+                <span>{t("allCategories")}</span>
+                <ArrowNext className="w-4 h-4" />
               </Link>
               <Link
                 href="/offers"
-                className="px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-all inline-flex items-center gap-2"
+                className="px-6 py-3 rounded-xl bg-white border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-all inline-flex items-center gap-2 cursor-pointer"
               >
                 <Tag className="w-4 h-4 text-brand-green" />
-                <span>عروض وتخفيضات حصرية</span>
+                <span>{t("offersAndDiscounts")}</span>
               </Link>
             </div>
           </div>
@@ -141,25 +145,24 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left/Main Column: Items List & Free shipping */}
             <div className="lg:col-span-8 space-y-6">
-              {/* Free Shipping Alert Banner (Only when enabled by Admin) */}
+              {/* Free Shipping Alert Banner */}
               {isFreeShippingEnabled && freeShippingThreshold > 0 && (
-                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-brand-turquoise/20 shadow-sm">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-brand-turquoise/20 shadow-sm text-start">
                   <div className="flex items-center justify-between text-xs sm:text-sm font-semibold mb-2">
                     <span className="flex items-center gap-2 text-brand-deep">
                       <Truck className="w-4 h-4 text-brand-teal" />
                       {amountToFreeShipping > 0 ? (
                         <>
-                          أضف بقيمة{" "}
+                          {t("cartFreeShippingProgress")}{" "}
                           <span className="text-brand-green font-extrabold">
-                            {amountToFreeShipping.toLocaleString("ar-DZ")} دج
-                          </span>{" "}
-                          إضافية للاستفادة من التوصيل المجاني
+                            {amountToFreeShipping.toLocaleString()}{" "}
+                            {t("currency")}
+                          </span>
                         </>
                       ) : (
                         <span className="text-brand-green font-extrabold flex items-center gap-1.5">
                           <CheckCircle2 className="w-4 h-4" />
-                          مبروك! طلبيتك مؤهلة للشحن المجاني لكافة الولايات الـ{" "}
-                          {TOTAL_ALGERIA_WILAYAS} 🎉
+                          {t("cartFreeShippingEarned")}
                         </span>
                       )}
                     </span>
@@ -178,81 +181,52 @@ export default function CartPage() {
 
               {/* Items Card */}
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-100">
-                <div className="p-4 sm:p-5 bg-slate-50/70 hidden sm:grid grid-cols-12 text-xs font-bold text-slate-500">
-                  <span className="col-span-6">المستحضر والمواصفات</span>
-                  <span className="col-span-2 text-center">سعر الوحدة</span>
-                  <span className="col-span-2 text-center">الكمية</span>
-                  <span className="col-span-2 text-left">المجموع</span>
-                </div>
-
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="p-4 sm:p-5 flex flex-col sm:grid sm:grid-cols-12 gap-4 items-center"
+                    className="p-4 sm:p-5 flex flex-wrap sm:grid sm:grid-cols-12 gap-4 items-center"
                   >
-                    {/* Product & Variant */}
-                    <div className="w-full sm:col-span-6 flex items-center gap-3 sm:gap-4">
-                      <div className="w-20 h-20 rounded-xl bg-slate-50 relative shrink-0 border border-slate-100 overflow-hidden flex items-center justify-center">
-                        {item.image ? (
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fill
-                            unoptimized
-                            sizes="80px"
-                            className="object-contain p-1.5"
-                          />
-                        ) : (
-                          <ShoppingBag className="w-8 h-8 text-slate-300" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <Link
-                          href={`/product/${item.slug}`}
-                          className="font-bold text-sm sm:text-base text-slate-900 hover:text-brand-deep transition-colors line-clamp-2"
-                        >
-                          {item.name}
-                        </Link>
-                        {item.selectedVariant && (
-                          <p className="text-xs text-brand-teal font-medium mt-1">
-                            {item.selectedVariant}
-                          </p>
-                        )}
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="mt-2 text-xs text-red-500 hover:text-red-700 flex items-center gap-1 font-medium transition-colors sm:hidden"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          حذف
-                        </button>
-                      </div>
+                    {/* Item Image */}
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0 sm:col-span-2">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
 
-                    {/* Unit Price */}
-                    <div className="hidden sm:block sm:col-span-2 text-center">
-                      <span className="font-bold text-sm text-slate-800">
-                        {item.price.toLocaleString("ar-DZ")} دج
-                      </span>
-                      {item.originalPrice &&
-                        item.originalPrice > item.price && (
-                          <span className="block text-xs text-slate-400 line-through">
-                            {item.originalPrice.toLocaleString("ar-DZ")} دج
-                          </span>
-                        )}
+                    {/* Item Info */}
+                    <div className="flex-1 min-w-40 sm:col-span-5 text-start">
+                      <Link
+                        href={`/product/${item.slug}`}
+                        className="font-bold text-sm sm:text-base text-slate-800 hover:text-brand-deep transition-colors line-clamp-2"
+                      >
+                        {item.name}
+                      </Link>
+                      <div className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                        <span>
+                          {item.price.toLocaleString()} {t("currency")}
+                        </span>
+                        {item.originalPrice &&
+                          item.originalPrice > item.price && (
+                            <span className="line-through text-slate-300">
+                              {item.originalPrice.toLocaleString()}{" "}
+                              {t("currency")}
+                            </span>
+                          )}
+                      </div>
                     </div>
 
                     {/* Quantity Controls */}
-                    <div className="w-full sm:w-auto sm:col-span-2 flex items-center justify-between sm:justify-center">
-                      <span className="text-xs text-slate-500 sm:hidden">
-                        الكمية:
-                      </span>
-                      <div className="flex items-center border border-slate-200 rounded-xl bg-slate-50 p-0.5">
+                    <div className="sm:col-span-3 flex items-center gap-2">
+                      <div className="flex items-center border border-slate-200 rounded-xl bg-slate-50 p-1">
                         <button
                           onClick={() =>
                             updateQuantity(item.id, item.quantity - 1)
                           }
-                          className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-red-500 transition-colors"
-                          aria-label="إنقاص الكمية"
+                          className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-red-500 transition-colors cursor-pointer"
+                          aria-label="Decrease"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
@@ -263,8 +237,8 @@ export default function CartPage() {
                           onClick={() =>
                             updateQuantity(item.id, item.quantity + 1)
                           }
-                          className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-brand-green transition-colors"
-                          aria-label="زيادة الكمية"
+                          className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-brand-green transition-colors cursor-pointer"
+                          aria-label="Increase"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -273,17 +247,14 @@ export default function CartPage() {
 
                     {/* Total Price & Delete button */}
                     <div className="w-full sm:w-auto sm:col-span-2 flex items-center justify-between sm:justify-end gap-3">
-                      <span className="text-xs text-slate-500 sm:hidden">
-                        المجموع:
-                      </span>
                       <span className="font-extrabold text-base text-brand-deep">
-                        {(item.price * item.quantity).toLocaleString("ar-DZ")}{" "}
-                        دج
+                        {(item.price * item.quantity).toLocaleString()}{" "}
+                        {t("currency")}
                       </span>
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="hidden sm:flex text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
-                        title="حذف المستحضر"
+                        className="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Remove"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -293,18 +264,17 @@ export default function CartPage() {
               </div>
 
               {/* Delivery Cost Estimator */}
-              <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-4">
+              <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-4 text-start">
                 <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
                   <Truck className="w-4 h-4 text-brand-teal" />
-                  حاسبة تكلفة التوصيل التقديرية (تغطية لكافة الـ{" "}
-                  {TOTAL_ALGERIA_WILAYAS} ولاية)
+                  {t("cartDeliveryLocation")} ({TOTAL_ALGERIA_WILAYAS} Wilayas)
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Wilaya Selection */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                      اختر ولايتك ({TOTAL_ALGERIA_WILAYAS} ولاية جزائرية):
+                      {t("checkoutWilaya")}:
                     </label>
                     <select
                       value={selectedWilayaCode}
@@ -315,7 +285,8 @@ export default function CartPage() {
                     >
                       {ALGERIA_WILAYAS.map((w) => (
                         <option key={w.code} value={w.code}>
-                          {w.code} - {w.nameAr} ({w.nameFr})
+                          {w.code} -{" "}
+                          {language === "ar" ? w.nameAr : w.nameFr || w.nameAr}
                         </option>
                       ))}
                     </select>
@@ -324,30 +295,30 @@ export default function CartPage() {
                   {/* Delivery Type Toggle */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                      نوع التوصيل:
+                      {t("checkoutDeliveryType")}:
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => setDeliveryType("home")}
-                        className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-all text-center ${
+                        className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
                           deliveryType === "home"
                             ? "bg-brand-deep text-white border-brand-deep shadow-sm"
                             : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                         }`}
                       >
-                        لباب المنزل
+                        {t("cartHomeDelivery")}
                       </button>
                       <button
                         type="button"
                         onClick={() => setDeliveryType("desk")}
-                        className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-all text-center ${
+                        className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${
                           deliveryType === "desk"
                             ? "bg-brand-deep text-white border-brand-deep shadow-sm"
                             : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                         }`}
                       >
-                        مكتب التوزيع (Stop Desk)
+                        {t("cartDeskDelivery")}
                       </button>
                     </div>
                   </div>
@@ -356,18 +327,22 @@ export default function CartPage() {
                 {/* Estimate Result */}
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex flex-wrap items-center justify-between text-xs text-slate-600 gap-2">
                   <span>
-                    المدة التقديرية للتسليم إلى{" "}
-                    <strong>{selectedWilaya.nameAr}</strong>:{" "}
+                    <strong>
+                      {language === "ar"
+                        ? selectedWilaya.nameAr
+                        : selectedWilaya.nameFr || selectedWilaya.nameAr}
+                    </strong>
+                    :{" "}
                     <strong className="text-slate-900">
                       {selectedWilaya.estimatedDays}
                     </strong>
                   </span>
                   <span>
-                    تكلفة التوصيل:{" "}
+                    {t("cartShippingFee")}:{" "}
                     <strong className="text-brand-green font-extrabold text-sm">
                       {shippingFee === 0
-                        ? "مجاناً"
-                        : `${shippingFee.toLocaleString("ar-DZ")} دج`}
+                        ? t("free")
+                        : `${shippingFee.toLocaleString()} ${t("currency")}`}
                     </strong>
                   </span>
                 </div>
@@ -379,56 +354,59 @@ export default function CartPage() {
                   href="/categories"
                   className="inline-flex items-center gap-2 text-sm font-bold text-brand-deep hover:text-brand-teal transition-colors"
                 >
-                  <ArrowRight className="w-4 h-4" />
-                  <span>متابعة التسوق وإضافة مستحضرات أخرى</span>
+                  <ArrowNext className="w-4 h-4" />
+                  <span>{t("cartContinueShopping")}</span>
                 </Link>
               </div>
             </div>
 
             {/* Right Column: Order Summary & Checkout CTA */}
-            <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+            <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24 text-start">
               <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-lg shadow-slate-100/50 space-y-5">
                 <h3 className="font-extrabold text-lg text-slate-900 border-b border-slate-100 pb-3">
-                  ملخص الطلبية
+                  {t("cartOrderSummary")}
                 </h3>
 
                 {/* Breakdown */}
                 <div className="space-y-3 text-sm text-slate-600">
                   <div className="flex items-center justify-between">
-                    <span>مجموع المستحضرات ({totalItemsCount})</span>
+                    <span>
+                      {t("cartSubtotal")} ({totalItemsCount})
+                    </span>
                     <span className="font-bold text-slate-900">
-                      {subtotal.toLocaleString("ar-DZ")} دج
+                      {subtotal.toLocaleString()} {t("currency")}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1">
-                      <span>التوصيل التقديري</span>
+                      <span>{t("cartShippingFee")}</span>
                       <span className="text-[11px] text-slate-400">
-                        ({selectedWilaya.nameAr})
+                        (
+                        {language === "ar"
+                          ? selectedWilaya.nameAr
+                          : selectedWilaya.nameFr || selectedWilaya.nameAr}
+                        )
                       </span>
                     </span>
                     <span className="font-bold text-slate-900">
                       {shippingFee === 0 ? (
                         <span className="text-brand-green font-bold">
-                          مجاني
+                          {t("free")}
                         </span>
                       ) : (
-                        `${shippingFee.toLocaleString("ar-DZ")} دج`
+                        `${shippingFee.toLocaleString()} ${t("currency")}`
                       )}
                     </span>
                   </div>
 
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-base">
                     <span className="font-extrabold text-slate-900">
-                      المبلغ الإجمالي
+                      {t("cartTotal")}
                     </span>
-                    <div className="text-left">
+                    <div className="text-end">
                       <span className="font-black text-xl text-brand-deep">
-                        {totalAmount.toLocaleString("ar-DZ")} دج
-                      </span>
-                      <span className="block text-[10px] text-slate-400 font-normal">
-                        شامل كافة الرسوم والتوصيل
+                        {totalAmount.toLocaleString()} {t("currency")}
                       </span>
                     </div>
                   </div>
@@ -437,10 +415,10 @@ export default function CartPage() {
                 {/* Checkout CTA */}
                 <Link
                   href="/checkout"
-                  className="w-full py-4 px-6 rounded-2xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-extrabold text-base flex items-center justify-center gap-2 hover:opacity-95 shadow-lg shadow-brand-deep/20 hover:shadow-xl active:scale-[0.99] transition-all text-center"
+                  className="w-full py-4 px-6 rounded-2xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-extrabold text-base flex items-center justify-center gap-2 hover:opacity-95 shadow-lg shadow-brand-deep/20 hover:shadow-xl active:scale-[0.99] transition-all text-center cursor-pointer"
                 >
-                  <span>متابعة إتمام الطلب (الدفع عند الاستلام)</span>
-                  <ArrowLeft className="w-5 h-5" />
+                  <span>{t("cartCheckoutBtn")}</span>
+                  <ArrowNext className="w-5 h-5" />
                 </Link>
 
                 {/* Trust Badges */}
@@ -449,30 +427,21 @@ export default function CartPage() {
                     <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                       <ShieldCheck className="w-4 h-4" />
                     </div>
-                    <span>
-                      <strong>الدفع عند الاستلام (COD):</strong> ادفع نقداً فور
-                      استلام طلبيتك وتفقدها.
-                    </span>
+                    <span>{t("checkoutCodNotice")}</span>
                   </div>
 
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-cyan-50 text-brand-teal flex items-center justify-center shrink-0">
                       <Truck className="w-4 h-4" />
                     </div>
-                    <span>
-                      <strong>توصيل سريع:</strong> تغطية كاملة لكافة الولايات
-                      الـ {TOTAL_ALGERIA_WILAYAS} بالجزائر.
-                    </span>
+                    <span>{t("trust69Wilayas")}</span>
                   </div>
 
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                       <RefreshCw className="w-4 h-4" />
                     </div>
-                    <span>
-                      <strong>منتجات أصلية 100%:</strong> من الموزعين والمخابر
-                      المعتمدة مباشرة.
-                    </span>
+                    <span>{t("trust100Original")}</span>
                   </div>
                 </div>
               </div>

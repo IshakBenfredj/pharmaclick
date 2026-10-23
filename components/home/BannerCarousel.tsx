@@ -13,7 +13,7 @@ interface BannerCarouselProps {
 export const BannerCarousel: React.FC<BannerCarouselProps> = ({
   banners: initialBanners,
 }) => {
-  const { getLocalized, direction } = useLanguage();
+  const { getLocalized, direction, t } = useLanguage();
   const [banners, setBanners] = useState<any[]>(initialBanners || MOCK_BANNERS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -60,8 +60,8 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({
 
   const title = getLocalized(currentBanner, "title") || currentBanner.title;
   const subtitle = getLocalized(currentBanner, "subtitle") || currentBanner.subtitle;
-  const badgeText = getLocalized(currentBanner, "badgeText") || currentBanner.badgeText || "عرض حصري";
-  const buttonText = getLocalized(currentBanner, "buttonText") || currentBanner.buttonText || "اكتشف الآن";
+  const badgeText = getLocalized(currentBanner, "badgeText") || currentBanner.badgeText || t("exclusiveOffer");
+  const buttonText = getLocalized(currentBanner, "buttonText") || currentBanner.buttonText || t("discoverNow");
 
   return (
     <div

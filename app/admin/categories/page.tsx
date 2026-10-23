@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState } from "react";
+import Link from "next/link";
 import {
   Layers,
   Plus,
@@ -12,28 +12,28 @@ import {
   ChevronLeft,
   CheckCircle2,
   Package,
-} from 'lucide-react';
-import { MOCK_CATEGORIES, MockCategory } from '@/lib/data/mockData';
-import { FormLabelWithHelp } from '@/components/ui';
+} from "lucide-react";
+import { MOCK_CATEGORIES, MockCategory } from "@/lib/data/mockData";
+import { FormLabelWithHelp } from "@/components/ui";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<MockCategory[]>(MOCK_CATEGORIES);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // New category form state
-  const [nameAr, setNameAr] = useState('');
-  const [nameFr, setNameFr] = useState('');
-  const [nameEn, setNameEn] = useState('');
-  const [slug, setSlug] = useState('');
-  const [descriptionAr, setDescriptionAr] = useState('');
+  const [nameAr, setNameAr] = useState("");
+  const [nameFr, setNameFr] = useState("");
+  const [nameEn, setNameEn] = useState("");
+  const [slug, setSlug] = useState("");
+  const [descriptionAr, setDescriptionAr] = useState("");
 
   const filteredCategories = categories.filter(
     (c) =>
       c.nameAr.includes(searchTerm) ||
       c.nameFr.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (c.nameEn && c.nameEn.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      c.slug.includes(searchTerm)
+      c.slug.includes(searchTerm),
   );
 
   const handleAddCategory = (e: React.FormEvent) => {
@@ -44,22 +44,22 @@ export default function AdminCategoriesPage() {
       _id: `cat_${Date.now()}`,
       nameAr,
       nameFr: nameFr || nameAr,
-      nameEn: nameEn || '',
-      slug: slug || nameAr.toLowerCase().replace(/\s+/g, '-'),
-      icon: 'Package',
-      image: '/categories/skincare.png',
+      nameEn: nameEn || "",
+      slug: slug || nameAr.toLowerCase().replace(/\s+/g, "-"),
+      icon: "Package",
+      image: "/categories/skincare.png",
       descriptionAr,
-      descriptionFr: '',
-      descriptionEn: '',
+      descriptionFr: "",
+      descriptionEn: "",
       productCount: 0,
     };
 
     setCategories([...categories, newCat]);
-    setNameAr('');
-    setNameFr('');
-    setNameEn('');
-    setSlug('');
-    setDescriptionAr('');
+    setNameAr("");
+    setNameFr("");
+    setNameEn("");
+    setSlug("");
+    setDescriptionAr("");
     setIsAddModalOpen(false);
   };
 
@@ -69,24 +69,30 @@ export default function AdminCategoriesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-            <Link href="/admin" className="hover:text-brand-deep transition-colors">
+            <Link
+              href="/admin"
+              className="hover:text-brand-deep transition-colors"
+            >
               لوحة التحكم
             </Link>
             <span>/</span>
-            <span className="text-slate-800 font-semibold">إدارة الأقسام والتصنيفات</span>
+            <span className="text-slate-800 font-semibold">
+              إدارة الأقسام والتصنيفات
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3">
             <Layers className="w-7 h-7 text-brand-deep" />
             شجرة الأقسام والتصنيفات ({categories.length})
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            تنظيم هيكل المنتجات والتصنيفات الرئيسية والفرعية لتسهيل تصفح الزبائن.
+            تنظيم هيكل المنتجات والتصنيفات الرئيسية والفرعية لتسهيل تصفح
+            الزبائن.
           </p>
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 self-start sm:self-auto"
+          className="px-5 py-3 rounded-2xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 self-start sm:self-auto"
         >
           <Plus className="w-5 h-5" />
           <span>إضافة قسم جديد</span>
@@ -124,18 +130,26 @@ export default function AdminCategoriesPage() {
             </div>
 
             <div>
-              <h3 className="font-black text-base text-slate-900">{cat.nameAr}</h3>
-              <p className="text-xs text-brand-teal font-semibold font-sans">{cat.nameFr}</p>
-              <span className="text-[11px] text-slate-400 font-mono block mt-1">/{cat.slug}</span>
+              <h3 className="font-black text-base text-slate-900">
+                {cat.nameAr}
+              </h3>
+              <p className="text-xs text-brand-teal font-semibold font-sans">
+                {cat.nameFr}
+              </p>
+              <span className="text-[11px] text-slate-400 font-mono block mt-1">
+                /{cat.slug}
+              </span>
             </div>
 
             <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-              {cat.descriptionAr || 'لا يوجد وصف مختصر لهذا القسم.'}
+              {cat.descriptionAr || "لا يوجد وصف مختصر لهذا القسم."}
             </p>
 
             {cat.subCategories && cat.subCategories.length > 0 && (
               <div className="pt-2 border-t border-slate-100 space-y-1">
-                <span className="text-[11px] font-bold text-slate-400 block">التصنيفات الفرعية:</span>
+                <span className="text-[11px] font-bold text-slate-400 block">
+                  التصنيفات الفرعية:
+                </span>
                 <div className="flex flex-wrap gap-1.5">
                   {cat.subCategories.map((sub, i) => (
                     <span

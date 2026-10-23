@@ -12,10 +12,11 @@ import {
   Trash2,
   Truck,
   ArrowLeft,
+  ArrowRight,
   ShieldCheck,
-  Tag,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export const CartDrawer: React.FC = () => {
   const pathname = usePathname();
@@ -32,6 +33,9 @@ export const CartDrawer: React.FC = () => {
     amountToFreeShipping,
     freeShippingProgress,
   } = useCart();
+  const { t, direction } = useLanguage();
+
+  const ArrowNext = direction === "rtl" ? ArrowLeft : ArrowRight;
 
   // Prevent body scroll when drawer is open
   useEffect(() => {
@@ -45,7 +49,7 @@ export const CartDrawer: React.FC = () => {
     };
   }, [isDrawerOpen]);
 
-  if (pathname?.startsWith('/admin') || !isDrawerOpen) return null;
+  if (pathname?.startsWith("/admin") || !isDrawerOpen) return null;
 
   return (
     <div
@@ -60,30 +64,40 @@ export const CartDrawer: React.FC = () => {
         aria-hidden="true"
       />
 
-      {/* Drawer Panel - slides in from the left (or right based on RTL layout) */}
-      <div className="fixed inset-y-0 left-0 max-w-full flex pl-0 z-10 w-full sm:w-110">
-        <div className="w-full bg-white shadow-2xl flex flex-col h-full animate-slideInLeft border-r border-slate-100">
+      {/* Drawer Panel - slides in depending on RTL/LTR */}
+      <div
+        className={`fixed inset-y-0 max-w-full flex z-10 w-full sm:w-110 ${
+          direction === "rtl" ? "left-0 pl-0" : "right-0 pr-0"
+        }`}
+      >
+        <div
+          className={`w-full bg-white shadow-2xl flex flex-col h-full border-slate-100 ${
+            direction === "rtl"
+              ? "border-r animate-slideInLeft"
+              : "border-l animate-slideInRight"
+          }`}
+        >
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-linear-to-r from-slate-50 to-white">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-brand-deep/10 text-brand-deep flex items-center justify-center">
                 <ShoppingBag className="w-5 h-5 text-brand-deep" />
               </div>
-              <div>
+              <div className="text-start">
                 <h3 className="font-bold text-slate-800 text-lg">
-                  سلة المشتريات
+                  {t("cartTitle")}
                 </h3>
                 <p className="text-xs text-slate-500">
                   {totalItemsCount > 0
-                    ? `${totalItemsCount} مستحضر في سلتك`
-                    : "سلتك فارغة حالياً"}
+                    ? `${totalItemsCount} ${t("itemsInYourCart")}`
+                    : t("cartEmptyNow")}
                 </p>
               </div>
             </div>
             <button
               onClick={closeDrawer}
-              aria-label="إغلاق السلة"
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              aria-label={t("closeCart")}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -99,15 +113,16 @@ export const CartDrawer: React.FC = () => {
                     <Truck className="w-4 h-4 text-brand-teal" />
                     {amountToFreeShipping > 0 ? (
                       <>
-                        أضف{" "}
+                        {t("cartFreeShippingProgress")}{" "}
                         <span className="text-brand-green font-bold">
-                          {amountToFreeShipping.toLocaleString("ar-DZ")} دج
+                          {amountToFreeShipping.toLocaleString()}{" "}
+                          {t("currency")}
                         </span>{" "}
-                        للحصول على شحن مجاني
+                        {direction === "rtl" ? "للحصول على شحن مجاني" : "for free shipping"}
                       </>
                     ) : (
                       <span className="text-brand-green font-bold">
-                        تهانينا! حصلت على توصيل مجاني لكافة الـ 69 ولاية 🎉
+                        {t("freeShippingCongrat")}
                       </span>
                     )}
                   </span>
@@ -133,18 +148,18 @@ export const CartDrawer: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-800 text-base">
-                    سلتك فارغة تماماً
+                    {t("cartEmptyTitle")}
                   </h4>
                   <p className="text-xs text-slate-500 mt-1 max-w-60">
-                    تصفح أحدث مستحضرات العناية والجمال وأضف ما يناسبك إلى سلتك
+                    {t("cartEmptySub")}
                   </p>
                 </div>
                 <button
                   onClick={closeDrawer}
-                  className="mt-2 inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-brand-deep text-white font-medium text-sm hover:bg-brand-deep/90 transition-all shadow-md shadow-brand-deep/15"
+                  className="mt-2 inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-brand-deep text-white font-medium text-sm hover:bg-brand-deep/90 transition-all shadow-md shadow-brand-deep/15 cursor-pointer"
                 >
-                  <Link href="/categories" onClick={closeDrawer}>
-                    تصفح المنتجات
+                  <Link href="/products" onClick={closeDrawer}>
+                    {t("browseProductsBtn")}
                   </Link>
                 </button>
               </div>
@@ -152,7 +167,7 @@ export const CartDrawer: React.FC = () => {
               items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex gap-3 p-3 rounded-2xl border border-slate-100 hover:border-slate-200 bg-white hover:shadow-sm transition-all relative group"
+                  className="flex gap-3 p-3 rounded-2xl border border-slate-100 hover:border-slate-200 bg-white hover:shadow-xs transition-all relative group text-start"
                 >
                   {/* Thumbnail */}
                   <div className="w-20 h-20 rounded-xl bg-slate-50 overflow-hidden relative shrink-0 border border-slate-100 flex items-center justify-center">
@@ -183,8 +198,8 @@ export const CartDrawer: React.FC = () => {
                         </Link>
                         <button
                           onClick={() => removeItem(item.id)}
-                          aria-label={`حذف ${item.name}`}
-                          className="text-slate-400 hover:text-red-500 p-1 rounded-lg transition-colors shrink-0"
+                          aria-label={`${t("deleteItem")} ${item.name}`}
+                          className="text-slate-400 hover:text-red-500 p-1 rounded-lg transition-colors shrink-0 cursor-pointer"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -201,12 +216,13 @@ export const CartDrawer: React.FC = () => {
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-50">
                       <div>
                         <span className="font-extrabold text-sm text-brand-deep">
-                          {(item.price * item.quantity).toLocaleString("ar-DZ")}{" "}
-                          دج
+                          {(item.price * item.quantity).toLocaleString()}{" "}
+                          {t("currency")}
                         </span>
                         {item.quantity > 1 && (
                           <span className="text-[10px] text-slate-400 block">
-                            ({item.price.toLocaleString("ar-DZ")} دج للقطعة)
+                            ({item.price.toLocaleString()} {t("currency")}{" "}
+                            {t("perItem")})
                           </span>
                         )}
                       </div>
@@ -217,8 +233,8 @@ export const CartDrawer: React.FC = () => {
                           onClick={() =>
                             updateQuantity(item.id, item.quantity - 1)
                           }
-                          className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-red-500 transition-colors"
-                          aria-label="إنقاص الكمية"
+                          className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-slate-600 hover:text-red-500 transition-colors cursor-pointer"
+                          aria-label="-"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
@@ -229,8 +245,8 @@ export const CartDrawer: React.FC = () => {
                           onClick={() =>
                             updateQuantity(item.id, item.quantity + 1)
                           }
-                          className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-600 hover:text-brand-green transition-colors"
-                          aria-label="زيادة الكمية"
+                          className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-slate-600 hover:text-brand-green transition-colors cursor-pointer"
+                          aria-label="+"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -248,19 +264,23 @@ export const CartDrawer: React.FC = () => {
               {/* Subtotal */}
               <div className="space-y-1.5 text-xs text-slate-600">
                 <div className="flex items-center justify-between">
-                  <span>المجموع الفرعي ({totalItemsCount} قطع)</span>
+                  <span>
+                    {t("cartSubtotal")} ({totalItemsCount} {t("units")})
+                  </span>
                   <span className="font-bold text-sm text-slate-900">
-                    {subtotal.toLocaleString("ar-DZ")} دج
+                    {subtotal.toLocaleString()} {t("currency")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-slate-500">
-                  <span>التوصيل لكافة الـ 69 ولاية</span>
+                  <span>{t("trust69Wilayas")}</span>
                   <span className="text-brand-teal font-medium">
                     {isFreeShippingEnabled &&
                     subtotal >= freeShippingThreshold ? (
-                      <span className="text-brand-green font-bold">مجاني</span>
+                      <span className="text-brand-green font-bold">
+                        {t("free")}
+                      </span>
                     ) : (
-                      "يحسب في صفحة الدفع"
+                      t("calculatedAtCheckout")
                     )}
                   </span>
                 </div>
@@ -273,8 +293,8 @@ export const CartDrawer: React.FC = () => {
                   onClick={closeDrawer}
                   className="w-full py-3.5 px-4 rounded-xl bg-linear-to-r from-brand-deep to-brand-teal text-white font-bold text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-all shadow-lg shadow-brand-deep/20 hover:shadow-xl active:scale-[0.99]"
                 >
-                  <span>متابعة إتمام الطلب (الدفع عند الاستلام)</span>
-                  <ArrowLeft className="w-4 h-4" />
+                  <span>{t("drawerCheckoutBtn")}</span>
+                  <ArrowNext className="w-4 h-4" />
                 </Link>
 
                 <Link
@@ -282,14 +302,14 @@ export const CartDrawer: React.FC = () => {
                   onClick={closeDrawer}
                   className="w-full py-2.5 px-4 rounded-xl bg-white border border-slate-200 text-slate-700 font-medium text-xs flex items-center justify-center hover:bg-slate-100 transition-colors"
                 >
-                  عرض تفاصيل السلة
+                  {t("viewCartDetails")}
                 </Link>
               </div>
 
               {/* Trust Badge */}
               <div className="flex items-center justify-center gap-2 pt-1 text-[11px] text-slate-500">
                 <ShieldCheck className="w-4 h-4 text-brand-green" />
-                <span>دفع آمن عند الاستلام وتفقد المنتجات قبل الدفع</span>
+                <span>{t("trustCod")}</span>
               </div>
             </div>
           )}
@@ -298,3 +318,5 @@ export const CartDrawer: React.FC = () => {
     </div>
   );
 };
+
+export default CartDrawer;

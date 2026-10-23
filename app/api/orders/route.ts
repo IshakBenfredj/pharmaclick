@@ -10,11 +10,36 @@ import {
 } from '@/lib/constants/wilayas';
 import { MOCK_PRODUCTS } from '@/lib/data/mockData';
 
+import { checkRateLimit } from '@/lib/rateLimit';
+
 // In-memory fallback cache for development/demo when MongoDB is not connected
 const inMemoryOrders = new Map<string, any>();
 
 export async function POST(req: NextRequest) {
   try {
+    // 0. فحص الحد من الطلبات المتكررة ومنع الإغراق (Rate Limiting: 8 طلبات كحد أقصى خلال 10 دقائق)
+    const rateLimit = checkRateLimit(req, {
+      limit: 8,
+      windowMs: 10 * 60 * 1000,
+      prefix: 'orders',
+    });
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'تم إرسال عدة طلبات خلال وقت وجيز. لحماية حسابك ومنع التكرار، يرجى الانتظار بضع دقائق قبل إرسال طلب جديد.',
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimit.retryAfterSeconds),
+          },
+        }
+      );
+    }
+
     const body = await req.json();
 
     const { customer, shippingAddress, items, customerNotes } = body;

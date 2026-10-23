@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import {
   Sliders,
   Plus,
@@ -29,12 +29,21 @@ import {
   Palette,
   Eye,
   Settings,
-} from 'lucide-react';
-import { FormLabelWithHelp } from '@/components/ui';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, MockProduct } from '@/lib/data/mockData';
+} from "lucide-react";
+import { FormLabelWithHelp } from "@/components/ui";
+import {
+  MOCK_PRODUCTS,
+  MOCK_CATEGORIES,
+  MockProduct,
+} from "@/lib/data/mockData";
 
-export type SelectionType = 'manual' | 'dynamic';
-export type DynamicCriteria = 'on_sale' | 'featured' | 'best_sellers' | 'most_viewed' | 'by_category';
+export type SelectionType = "manual" | "dynamic";
+export type DynamicCriteria =
+  | "on_sale"
+  | "featured"
+  | "best_sellers"
+  | "most_viewed"
+  | "by_category";
 
 export interface MarketingSectionItem {
   id: string;
@@ -59,85 +68,151 @@ export interface MarketingSectionItem {
   isActive: boolean;
 }
 
-const EMOJI_OPTIONS = ['🏷️', '💎', '🔥', '🌿', '💧', '🧴', '🌸', '⭐', '🎯', '👑', '🧼'];
+const EMOJI_OPTIONS = [
+  "🏷️",
+  "💎",
+  "🔥",
+  "🌿",
+  "💧",
+  "🧴",
+  "🌸",
+  "⭐",
+  "🎯",
+  "👑",
+  "🧼",
+];
 
-const DYNAMIC_CRITERIA_OPTIONS: { id: DynamicCriteria; label: string; desc: string }[] = [
-  { id: 'on_sale', label: 'تخفيضات كبرى وعروض حصرية', desc: 'استعلام تلقائي للمستحضرات التي تحتوي على نسبة خصم (Discount > 0%)' },
-  { id: 'best_sellers', label: 'الأكثر مبيعاً وطلباً', desc: 'استعلام تلقائي للمستحضرات الأكثر شراءً وطلباً في المتجر' },
-  { id: 'featured', label: 'مستحضرات مميزة وموصى بها', desc: 'استعلام تلقائي للمستحضرات التي تم تعيينها كـ Featured' },
-  { id: 'most_viewed', label: 'الأكثر تصفحاً ومشاهدة', desc: 'استعلام تلقائي للمستحضرات الأعلى زيارة ومشاهدة' },
-  { id: 'by_category', label: 'حسب تصنيف وقسم محدد', desc: 'استعلام تلقائي لكافة مستحضرات قسم معين تختاره أدناه' },
+const DYNAMIC_CRITERIA_OPTIONS: {
+  id: DynamicCriteria;
+  label: string;
+  desc: string;
+}[] = [
+  {
+    id: "on_sale",
+    label: "تخفيضات كبرى وعروض حصرية",
+    desc: "استعلام تلقائي للمستحضرات التي تحتوي على نسبة خصم (Discount > 0%)",
+  },
+  {
+    id: "best_sellers",
+    label: "الأكثر مبيعاً وطلباً",
+    desc: "استعلام تلقائي للمستحضرات الأكثر شراءً وطلباً في المتجر",
+  },
+  {
+    id: "featured",
+    label: "مستحضرات مميزة وموصى بها",
+    desc: "استعلام تلقائي للمستحضرات التي تم تعيينها كـ Featured",
+  },
+  {
+    id: "most_viewed",
+    label: "الأكثر تصفحاً ومشاهدة",
+    desc: "استعلام تلقائي للمستحضرات الأعلى زيارة ومشاهدة",
+  },
+  {
+    id: "by_category",
+    label: "حسب تصنيف وقسم محدد",
+    desc: "استعلام تلقائي لكافة مستحضرات قسم معين تختاره أدناه",
+  },
 ];
 
 const BACKGROUND_OPTIONS = [
-  { id: '', label: 'أبيض كلاسيكي نقي', preview: 'bg-white border-slate-200' },
-  { id: 'bg-gradient-to-r from-teal-50 via-emerald-50/40 to-white', label: 'تدرج تركوازي وزمردي هادئ', preview: 'bg-gradient-to-r from-teal-50 to-emerald-50 border-teal-200' },
-  { id: 'bg-gradient-to-r from-slate-50 to-slate-100', label: 'رمادي عصري ناعم', preview: 'bg-slate-100 border-slate-300' },
-  { id: 'bg-gradient-to-r from-brand-deep/5 via-brand-teal/5 to-transparent', label: 'هوية المتجر الخضراء الفاخرة', preview: 'bg-brand-deep/10 border-brand-teal/30' },
+  { id: "", label: "أبيض كلاسيكي نقي", preview: "bg-white border-slate-200" },
+  {
+    id: "bg-linear-to-r from-teal-50 via-emerald-50/40 to-white",
+    label: "تدرج تركوازي وزمردي هادئ",
+    preview: "bg-linear-to-r from-teal-50 to-emerald-50 border-teal-200",
+  },
+  {
+    id: "bg-linear-to-r from-slate-50 to-slate-100",
+    label: "رمادي عصري ناعم",
+    preview: "bg-slate-100 border-slate-300",
+  },
+  {
+    id: "bg-linear-to-r from-brand-deep/5 via-brand-teal/5 to-transparent",
+    label: "هوية المتجر الخضراء الفاخرة",
+    preview: "bg-brand-deep/10 border-brand-teal/30",
+  },
 ];
 
 export default function AdminMarketingPage() {
   const [sections, setSections] = useState<MarketingSectionItem[]>([]);
-  const [catalogProducts, setCatalogProducts] = useState<MockProduct[]>(MOCK_PRODUCTS);
+  const [catalogProducts, setCatalogProducts] =
+    useState<MockProduct[]>(MOCK_PRODUCTS);
   const [categoriesList, setCategoriesList] = useState<any[]>(MOCK_CATEGORIES);
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
 
   // Toast feedback
   const [feedback, setFeedback] = useState<{
-    type: 'success' | 'error' | 'info';
+    type: "success" | "error" | "info";
     message: string;
   } | null>(null);
 
   // Modal 1: Add New Section Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newTitleFr, setNewTitleFr] = useState('');
-  const [newTitleEn, setNewTitleEn] = useState('');
-  const [newSubtitle, setNewSubtitle] = useState('');
-  const [newSubtitleFr, setNewSubtitleFr] = useState('');
-  const [newSubtitleEn, setNewSubtitleEn] = useState('');
-  const [newEmoji, setNewEmoji] = useState('🏷️');
-  const [newBadge, setNewBadge] = useState('جديد');
-  const [newBadgeFr, setNewBadgeFr] = useState('');
-  const [newBadgeEn, setNewBadgeEn] = useState('');
-  const [newSelectionType, setNewSelectionType] = useState<SelectionType>('manual');
-  const [newDynamicCriteria, setNewDynamicCriteria] = useState<DynamicCriteria>('on_sale');
-  const [newTargetCategory, setNewTargetCategory] = useState<string>('all');
+  const [newTitle, setNewTitle] = useState("");
+  const [newTitleFr, setNewTitleFr] = useState("");
+  const [newTitleEn, setNewTitleEn] = useState("");
+  const [newSubtitle, setNewSubtitle] = useState("");
+  const [newSubtitleFr, setNewSubtitleFr] = useState("");
+  const [newSubtitleEn, setNewSubtitleEn] = useState("");
+  const [newEmoji, setNewEmoji] = useState("🏷️");
+  const [newBadge, setNewBadge] = useState("جديد");
+  const [newBadgeFr, setNewBadgeFr] = useState("");
+  const [newBadgeEn, setNewBadgeEn] = useState("");
+  const [newSelectionType, setNewSelectionType] =
+    useState<SelectionType>("manual");
+  const [newDynamicCriteria, setNewDynamicCriteria] =
+    useState<DynamicCriteria>("on_sale");
+  const [newTargetCategory, setNewTargetCategory] = useState<string>("all");
   const [newLimit, setNewLimit] = useState<number>(8);
-  const [newBackgroundColor, setNewBackgroundColor] = useState<string>('');
+  const [newBackgroundColor, setNewBackgroundColor] = useState<string>("");
   const [newOrder, setNewOrder] = useState<number>(1);
-  const [newSelectedProductIds, setNewSelectedProductIds] = useState<string[]>([]);
+  const [newSelectedProductIds, setNewSelectedProductIds] = useState<string[]>(
+    [],
+  );
   const [isCreating, setIsCreating] = useState(false);
 
   // Modal 2: Edit Section Settings
-  const [editingSection, setEditingSection] = useState<MarketingSectionItem | null>(null);
+  const [editingSection, setEditingSection] =
+    useState<MarketingSectionItem | null>(null);
 
   // Modal 3: Product Picker Modal (Search & Multi-select)
   const [isProductPickerOpen, setIsProductPickerOpen] = useState(false);
-  const [pickerTarget, setPickerTarget] = useState<'new_section' | 'editing_section'>('editing_section');
+  const [pickerTarget, setPickerTarget] = useState<
+    "new_section" | "editing_section"
+  >("editing_section");
   const [pickerSelectedIds, setPickerSelectedIds] = useState<string[]>([]);
-  const [pickerSearch, setPickerSearch] = useState('');
-  const [pickerCategory, setPickerCategory] = useState('all');
+  const [pickerSearch, setPickerSearch] = useState("");
+  const [pickerCategory, setPickerCategory] = useState("all");
 
   // Helper to resolve product objects from array of IDs
   const getProductsByIds = (ids: string[]) => {
     if (!Array.isArray(ids)) return [];
     return ids
-      .map((id) => catalogProducts.find((p: any) => p._id === id || p.id === id))
+      .map((id) =>
+        catalogProducts.find((p: any) => p._id === id || p.id === id),
+      )
       .filter(Boolean);
   };
 
   // Helper to resolve readable category name from ID or slug
   const getCategoryName = (catIdOrSlug?: string | null) => {
-    if (!catIdOrSlug || catIdOrSlug === 'all') return 'كافة الأقسام';
+    if (!catIdOrSlug || catIdOrSlug === "all") return "كافة الأقسام";
     for (const c of categoriesList) {
-      if (c._id === catIdOrSlug || c.slug === catIdOrSlug || c.id === catIdOrSlug) {
+      if (
+        c._id === catIdOrSlug ||
+        c.slug === catIdOrSlug ||
+        c.id === catIdOrSlug
+      ) {
         return c.nameAr || c.name || catIdOrSlug;
       }
       if (Array.isArray(c.subCategories)) {
         for (const sub of c.subCategories) {
-          if (sub._id === catIdOrSlug || sub.slug === catIdOrSlug || sub.id === catIdOrSlug) {
+          if (
+            sub._id === catIdOrSlug ||
+            sub.slug === catIdOrSlug ||
+            sub.id === catIdOrSlug
+          ) {
             return `${c.nameAr || c.name} > ${sub.nameAr || sub.name}`;
           }
         }
@@ -159,9 +234,9 @@ export default function AdminMarketingPage() {
     setIsLoading(true);
     try {
       const [secRes, prodRes, catRes] = await Promise.all([
-        fetch('/api/admin/marketing'),
-        fetch('/api/admin/products'),
-        fetch('/api/categories?limit=50'),
+        fetch("/api/admin/marketing"),
+        fetch("/api/admin/products"),
+        fetch("/api/categories?limit=50"),
       ]);
 
       if (secRes.ok) {
@@ -174,19 +249,27 @@ export default function AdminMarketingPage() {
 
       if (prodRes.ok) {
         const prodData = await prodRes.json();
-        if (prodData.success && Array.isArray(prodData.products) && prodData.products.length > 0) {
+        if (
+          prodData.success &&
+          Array.isArray(prodData.products) &&
+          prodData.products.length > 0
+        ) {
           setCatalogProducts(prodData.products);
         }
       }
 
       if (catRes.ok) {
         const catData = await catRes.json();
-        if (catData.success && Array.isArray(catData.categories) && catData.categories.length > 0) {
+        if (
+          catData.success &&
+          Array.isArray(catData.categories) &&
+          catData.categories.length > 0
+        ) {
           setCategoriesList(catData.categories);
         }
       }
     } catch (err: any) {
-      console.warn('Failed to load marketing data from backend:', err);
+      console.warn("Failed to load marketing data from backend:", err);
     } finally {
       setIsLoading(false);
     }
@@ -201,9 +284,11 @@ export default function AdminMarketingPage() {
     const matchesSearch =
       p.name.toLowerCase().includes(pickerSearch.toLowerCase()) ||
       (p.brand && p.brand.toLowerCase().includes(pickerSearch.toLowerCase())) ||
-      (p.category && p.category.toLowerCase().includes(pickerSearch.toLowerCase()));
+      (p.category &&
+        p.category.toLowerCase().includes(pickerSearch.toLowerCase()));
 
-    const matchesCat = pickerCategory === 'all' || p.categorySlug === pickerCategory;
+    const matchesCat =
+      pickerCategory === "all" || p.categorySlug === pickerCategory;
     return matchesSearch && matchesCat;
   });
 
@@ -249,9 +334,9 @@ export default function AdminMarketingPage() {
   const persistReorder = async (reorderedSections: MarketingSectionItem[]) => {
     setIsSavingOrder(true);
     try {
-      const res = await fetch('/api/admin/marketing', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/admin/marketing", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           reorder: reorderedSections.map((s, idx) => ({
             id: s.id,
@@ -263,16 +348,16 @@ export default function AdminMarketingPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setFeedback({
-          type: 'success',
-          message: 'تم حفظ ترتيب الأقسام الترويجية بنجاح!',
+          type: "success",
+          message: "تم حفظ ترتيب الأقسام الترويجية بنجاح!",
         });
       } else {
-        throw new Error(data.message || 'فشل في حفظ الترتيب');
+        throw new Error(data.message || "فشل في حفظ الترتيب");
       }
     } catch (err: any) {
       setFeedback({
-        type: 'error',
-        message: err.message || 'تعذر حفظ الترتيب الجديد في الخادم',
+        type: "error",
+        message: err.message || "تعذر حفظ الترتيب الجديد في الخادم",
       });
     } finally {
       setIsSavingOrder(false);
@@ -282,11 +367,11 @@ export default function AdminMarketingPage() {
   // Delete Section
   const handleDeleteSection = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('هل أنت متأكد من حذف هذا القسم الترويجي نهائياً؟')) return;
+    if (!confirm("هل أنت متأكد من حذف هذا القسم الترويجي نهائياً؟")) return;
 
     try {
       const res = await fetch(`/api/admin/marketing?id=${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       const data = await res.json();
 
@@ -301,59 +386,64 @@ export default function AdminMarketingPage() {
           setEditingSection(null);
         }
         setFeedback({
-          type: 'success',
-          message: 'تم حذف القسم الترويجي بنجاح!',
+          type: "success",
+          message: "تم حذف القسم الترويجي بنجاح!",
         });
         await persistReorder(reordered);
       } else {
-        throw new Error(data.message || 'فشل في حذف القسم');
+        throw new Error(data.message || "فشل في حذف القسم");
       }
     } catch (err: any) {
       setFeedback({
-        type: 'error',
-        message: err.message || 'تعذر حذف القسم الترويجي',
+        type: "error",
+        message: err.message || "تعذر حذف القسم الترويجي",
       });
     }
   };
 
   // Open Product Picker
-  const openProductPicker = (target: 'new_section' | 'editing_section') => {
+  const openProductPicker = (target: "new_section" | "editing_section") => {
     setPickerTarget(target);
-    if (target === 'new_section') {
+    if (target === "new_section") {
       setPickerSelectedIds([...newSelectedProductIds]);
     } else if (editingSection) {
       setPickerSelectedIds([...editingSection.productIds]);
     }
-    setPickerSearch('');
-    setPickerCategory('all');
+    setPickerSearch("");
+    setPickerCategory("all");
     setIsProductPickerOpen(true);
   };
 
   // Toggle single product selection
   const toggleProductSelection = (productId: string) => {
     setPickerSelectedIds((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId],
     );
   };
 
   // Confirm product selection from picker
   const confirmProductSelection = async () => {
-    if (pickerTarget === 'new_section') {
+    if (pickerTarget === "new_section") {
       setNewSelectedProductIds(pickerSelectedIds);
       setIsProductPickerOpen(false);
     } else if (editingSection) {
-      const updatedSection = { ...editingSection, productIds: pickerSelectedIds };
+      const updatedSection = {
+        ...editingSection,
+        productIds: pickerSelectedIds,
+      };
       setEditingSection(updatedSection);
       setSections((prev) =>
-        prev.map((s) => (s.id === updatedSection.id ? updatedSection : s))
+        prev.map((s) => (s.id === updatedSection.id ? updatedSection : s)),
       );
       setIsProductPickerOpen(false);
 
       // Persist to backend
       try {
-        const res = await fetch('/api/admin/marketing', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/admin/marketing", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: updatedSection.id,
             productIds: pickerSelectedIds,
@@ -362,12 +452,12 @@ export default function AdminMarketingPage() {
         const data = await res.json();
         if (res.ok && data.success) {
           setFeedback({
-            type: 'success',
-            message: 'تم حفظ وتحديث منتجات القسم بنجاح في قاعدة البيانات!',
+            type: "success",
+            message: "تم حفظ وتحديث منتجات القسم بنجاح في قاعدة البيانات!",
           });
         }
       } catch (err) {
-        console.warn('Backend update error:', err);
+        console.warn("Backend update error:", err);
       }
     }
   };
@@ -375,29 +465,31 @@ export default function AdminMarketingPage() {
   // Quick remove product from editing section
   const removeProductFromSection = async (productId: string) => {
     if (!editingSection) return;
-    const updatedIds = editingSection.productIds.filter((id) => id !== productId);
+    const updatedIds = editingSection.productIds.filter(
+      (id) => id !== productId,
+    );
     const updatedSection = { ...editingSection, productIds: updatedIds };
     setEditingSection(updatedSection);
     setSections((prev) =>
-      prev.map((s) => (s.id === updatedSection.id ? updatedSection : s))
+      prev.map((s) => (s.id === updatedSection.id ? updatedSection : s)),
     );
 
     // Persist to backend
     try {
-      await fetch('/api/admin/marketing', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/admin/marketing", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: updatedSection.id,
           productIds: updatedIds,
         }),
       });
       setFeedback({
-        type: 'info',
-        message: 'تم إزالة المنتج من القسم وحفظ التغيير',
+        type: "info",
+        message: "تم إزالة المنتج من القسم وحفظ التغيير",
       });
     } catch (err) {
-      console.warn('Backend remove product error:', err);
+      console.warn("Backend remove product error:", err);
     }
   };
 
@@ -408,9 +500,9 @@ export default function AdminMarketingPage() {
 
     setIsCreating(true);
     try {
-      const res = await fetch('/api/admin/marketing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/admin/marketing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: newTitle.trim(),
           titleFr: newTitleFr.trim() || undefined,
@@ -418,45 +510,51 @@ export default function AdminMarketingPage() {
           subtitle: newSubtitle.trim(),
           subtitleFr: newSubtitleFr.trim() || undefined,
           subtitleEn: newSubtitleEn.trim() || undefined,
-          emoji: newEmoji.trim() || '🏷️',
-          badge: newBadge.trim() || 'جديد',
+          emoji: newEmoji.trim() || "🏷️",
+          badge: newBadge.trim() || "جديد",
           badgeTextFr: newBadgeFr.trim() || undefined,
           badgeTextEn: newBadgeEn.trim() || undefined,
           selectionType: newSelectionType,
           dynamicCriteria: newDynamicCriteria,
-          targetCategory: newSelectionType === 'dynamic' ? (newTargetCategory === 'all' ? null : newTargetCategory) : null,
-          limit: newSelectionType === 'dynamic' ? (Number(newLimit) || 8) : 0,
+          targetCategory:
+            newSelectionType === "dynamic"
+              ? newTargetCategory === "all"
+                ? null
+                : newTargetCategory
+              : null,
+          limit: newSelectionType === "dynamic" ? Number(newLimit) || 8 : 0,
           backgroundColor: newBackgroundColor,
           order: newOrder,
-          productIds: newSelectionType === 'manual' ? newSelectedProductIds : [],
+          productIds:
+            newSelectionType === "manual" ? newSelectedProductIds : [],
         }),
       });
 
       const data = await res.json();
       if (res.ok && data.success && data.section) {
         setSections([...sections, data.section]);
-        setNewTitle('');
-        setNewTitleFr('');
-        setNewTitleEn('');
-        setNewSubtitle('');
-        setNewSubtitleFr('');
-        setNewSubtitleEn('');
-        setNewBadge('جديد');
-        setNewBadgeFr('');
-        setNewBadgeEn('');
+        setNewTitle("");
+        setNewTitleFr("");
+        setNewTitleEn("");
+        setNewSubtitle("");
+        setNewSubtitleFr("");
+        setNewSubtitleEn("");
+        setNewBadge("جديد");
+        setNewBadgeFr("");
+        setNewBadgeEn("");
         setNewSelectedProductIds([]);
         setIsAddModalOpen(false);
         setFeedback({
-          type: 'success',
-          message: 'تم إنشاء القسم الترويجي بنجاح وفق مواصفات النموذج المعتمد!',
+          type: "success",
+          message: "تم إنشاء القسم الترويجي بنجاح وفق مواصفات النموذج المعتمد!",
         });
       } else {
-        throw new Error(data.message || 'فشل في حفظ القسم');
+        throw new Error(data.message || "فشل في حفظ القسم");
       }
     } catch (err: any) {
       setFeedback({
-        type: 'error',
-        message: err.message || 'تعذر إضافة القسم الترويجي',
+        type: "error",
+        message: err.message || "تعذر إضافة القسم الترويجي",
       });
     } finally {
       setIsCreating(false);
@@ -469,9 +567,9 @@ export default function AdminMarketingPage() {
     if (!editingSection) return;
 
     try {
-      const res = await fetch('/api/admin/marketing', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/admin/marketing", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: editingSection.id,
           title: editingSection.title,
@@ -486,35 +584,46 @@ export default function AdminMarketingPage() {
           badgeTextEn: editingSection.badgeTextEn || undefined,
           selectionType: editingSection.selectionType,
           dynamicCriteria: editingSection.dynamicCriteria,
-          targetCategory: editingSection.selectionType === 'dynamic' ? (editingSection.targetCategory === 'all' ? null : editingSection.targetCategory) : null,
-          limit: editingSection.selectionType === 'dynamic' ? (Number(editingSection.limit) || 8) : 0,
+          targetCategory:
+            editingSection.selectionType === "dynamic"
+              ? editingSection.targetCategory === "all"
+                ? null
+                : editingSection.targetCategory
+              : null,
+          limit:
+            editingSection.selectionType === "dynamic"
+              ? Number(editingSection.limit) || 8
+              : 0,
           backgroundColor: editingSection.backgroundColor,
           isActive: editingSection.isActive,
-          productIds: editingSection.selectionType === 'manual' ? editingSection.productIds : [],
+          productIds:
+            editingSection.selectionType === "manual"
+              ? editingSection.productIds
+              : [],
         }),
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
         setSections((prev) =>
-          prev.map((s) => (s.id === editingSection.id ? editingSection : s))
+          prev.map((s) => (s.id === editingSection.id ? editingSection : s)),
         );
         setEditingSection(null);
         setFeedback({
-          type: 'success',
-          message: 'تم حفظ وتحديث إعدادات القسم الترويجي بالكامل في قاعدة البيانات!',
+          type: "success",
+          message:
+            "تم حفظ وتحديث إعدادات القسم الترويجي بالكامل في قاعدة البيانات!",
         });
       } else {
-        throw new Error(data.message || 'فشل في حفظ التعديلات');
+        throw new Error(data.message || "فشل في حفظ التعديلات");
       }
     } catch (err: any) {
       setFeedback({
-        type: 'error',
-        message: err.message || 'تعذر حفظ إعدادات القسم',
+        type: "error",
+        message: err.message || "تعذر حفظ إعدادات القسم",
       });
     }
   };
-
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
@@ -522,17 +631,17 @@ export default function AdminMarketingPage() {
       {feedback && (
         <div
           className={`p-4 rounded-2xl border text-xs sm:text-sm flex items-center justify-between gap-3 shadow-md animate-in fade-in slide-in-from-top-2 duration-200 ${
-            feedback.type === 'success'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              : feedback.type === 'info'
-              ? 'bg-teal-50 border-teal-200 text-brand-deep'
-              : 'bg-red-50 border-red-200 text-red-800'
+            feedback.type === "success"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              : feedback.type === "info"
+                ? "bg-teal-50 border-teal-200 text-brand-deep"
+                : "bg-red-50 border-red-200 text-red-800"
           }`}
         >
           <div className="flex items-center gap-2.5 font-bold">
-            {feedback.type === 'success' ? (
+            {feedback.type === "success" ? (
               <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            ) : feedback.type === 'info' ? (
+            ) : feedback.type === "info" ? (
               <Sliders className="w-5 h-5 text-brand-teal shrink-0" />
             ) : (
               <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
@@ -553,18 +662,24 @@ export default function AdminMarketingPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-            <Link href="/admin" className="hover:text-brand-deep transition-colors">
+            <Link
+              href="/admin"
+              className="hover:text-brand-deep transition-colors"
+            >
               لوحة التحكم
             </Link>
             <span>/</span>
-            <span className="text-slate-800 font-semibold">محرك الأقسام الترويجية المتقدم (Marketing CMS)</span>
+            <span className="text-slate-800 font-semibold">
+              محرك الأقسام الترويجية المتقدم (Marketing CMS)
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3">
             <Sliders className="w-7 h-7 text-brand-deep" />
             أقسام الصفحة الرئيسية الترويجية ({sections.length})
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            إدارة متكاملة وفق نموذج MarketingSection: ترتيب بالأسهم (⬆️/⬇️)، استعلام ديناميكي ذكي (تخفيضات، الأكثر مبيعاً)، أو انتقاء يدوي مخصص.
+            إدارة متكاملة وفق نموذج MarketingSection: ترتيب بالأسهم (⬆️/⬇️)،
+            استعلام ديناميكي ذكي (تخفيضات، الأكثر مبيعاً)، أو انتقاء يدوي مخصص.
           </p>
         </div>
 
@@ -578,19 +693,19 @@ export default function AdminMarketingPage() {
 
           <button
             onClick={() => {
-              setNewTitle('');
-              setNewSubtitle('');
-              setNewEmoji('🏷️');
-              setNewBadge('جديد');
-              setNewSelectionType('manual');
-              setNewDynamicCriteria('on_sale');
-              setNewTargetCategory('all');
+              setNewTitle("");
+              setNewSubtitle("");
+              setNewEmoji("🏷️");
+              setNewBadge("جديد");
+              setNewSelectionType("manual");
+              setNewDynamicCriteria("on_sale");
+              setNewTargetCategory("all");
               setNewLimit(8);
               setNewSelectedProductIds([]);
               setNewOrder(sections.length + 1);
               setIsAddModalOpen(true);
             }}
-            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 cursor-pointer"
+            className="px-5 py-3 rounded-2xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 cursor-pointer"
           >
             <Plus className="w-5 h-5" />
             <span>إنشاء قسم ترويجي جديد</span>
@@ -599,11 +714,14 @@ export default function AdminMarketingPage() {
       </div>
 
       {/* Info Banner */}
-      <div className="bg-gradient-to-r from-teal-50 via-emerald-50/50 to-white p-4 sm:p-5 rounded-3xl border border-teal-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+      <div className="bg-linear-to-r from-teal-50 via-emerald-50/50 to-white p-4 sm:p-5 rounded-3xl border border-teal-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2.5 text-brand-deep font-bold">
           <ArrowUpDown className="w-5 h-5 text-brand-teal shrink-0" />
           <span>
-            <strong>الترتيب والذكاء:</strong> تدعم الأقسام نوعين: <strong>يدوي (Manual)</strong> لاختيار منتجات معينة، أو <strong>ديناميكي (Dynamic)</strong> لجلب العروض والأكثر مبيعاً تلقائياً، مع ترتيب تسلسلي محفوظ فورياً.
+            <strong>الترتيب والذكاء:</strong> تدعم الأقسام نوعين:{" "}
+            <strong>يدوي (Manual)</strong> لاختيار منتجات معينة، أو{" "}
+            <strong>ديناميكي (Dynamic)</strong> لجلب العروض والأكثر مبيعاً
+            تلقائياً، مع ترتيب تسلسلي محفوظ فورياً.
           </span>
         </div>
         <span className="text-[11px] text-slate-500 font-medium">
@@ -615,14 +733,19 @@ export default function AdminMarketingPage() {
       {isLoading ? (
         <div className="p-16 text-center space-y-3 bg-white rounded-3xl border border-slate-200/80">
           <Loader2 className="w-8 h-8 text-brand-teal animate-spin mx-auto" />
-          <p className="text-xs font-bold text-slate-500">جاري تحميل الأقسام الترويجية من قاعدة البيانات...</p>
+          <p className="text-xs font-bold text-slate-500">
+            جاري تحميل الأقسام الترويجية من قاعدة البيانات...
+          </p>
         </div>
       ) : sections.length === 0 ? (
         <div className="p-16 text-center space-y-4 bg-white rounded-3xl border border-slate-200/80">
           <Package className="w-12 h-12 text-slate-300 mx-auto" />
-          <h3 className="font-extrabold text-base text-slate-700">لا توجد أقسام ترويجية حتى الآن</h3>
+          <h3 className="font-extrabold text-base text-slate-700">
+            لا توجد أقسام ترويجية حتى الآن
+          </h3>
           <p className="text-xs text-slate-400 max-w-sm mx-auto">
-            قم بإنشاء قسمك الترويجي الأول لعرض العروض المميزة، التخفيضات، أو المستحضرات الأكثر طلباً في الرئيسية.
+            قم بإنشاء قسمك الترويجي الأول لعرض العروض المميزة، التخفيضات، أو
+            المستحضرات الأكثر طلباً في الرئيسية.
           </p>
           <button
             onClick={() => setIsAddModalOpen(true)}
@@ -635,12 +758,16 @@ export default function AdminMarketingPage() {
         /* Sections Cards Grid with Full Model Fields */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sections.map((sec, index) => {
-            const isManual = sec.selectionType === 'manual';
-            const assignedProducts = isManual ? getProductsByIds(sec.productIds) : (sec.resolvedProducts || []);
+            const isManual = sec.selectionType === "manual";
+            const assignedProducts = isManual
+              ? getProductsByIds(sec.productIds)
+              : sec.resolvedProducts || [];
             const isFirst = index === 0;
             const isLast = index === sections.length - 1;
 
-            const criteriaLabel = DYNAMIC_CRITERIA_OPTIONS.find((c) => c.id === sec.dynamicCriteria)?.label || 'تلقائي';
+            const criteriaLabel =
+              DYNAMIC_CRITERIA_OPTIONS.find((c) => c.id === sec.dynamicCriteria)
+                ?.label || "تلقائي";
 
             return (
               <div
@@ -666,11 +793,15 @@ export default function AdminMarketingPage() {
                           type="button"
                           onClick={(e) => handleMoveUp(index, e)}
                           disabled={isFirst}
-                          title={isFirst ? 'القسم في أعلى موضع بالفعل' : 'تحريك القسم للأعلى'}
+                          title={
+                            isFirst
+                              ? "القسم في أعلى موضع بالفعل"
+                              : "تحريك القسم للأعلى"
+                          }
                           className={`p-1.5 rounded-lg transition-colors ${
                             isFirst
-                              ? 'text-slate-300 cursor-not-allowed'
-                              : 'text-slate-600 hover:text-brand-deep hover:bg-white shadow-2xs cursor-pointer'
+                              ? "text-slate-300 cursor-not-allowed"
+                              : "text-slate-600 hover:text-brand-deep hover:bg-white shadow-2xs cursor-pointer"
                           }`}
                         >
                           <ArrowUp className="w-3.5 h-3.5" />
@@ -679,11 +810,15 @@ export default function AdminMarketingPage() {
                           type="button"
                           onClick={(e) => handleMoveDown(index, e)}
                           disabled={isLast}
-                          title={isLast ? 'القسم في أسفل موضع بالفعل' : 'تحريك القسم للأسفل'}
+                          title={
+                            isLast
+                              ? "القسم في أسفل موضع بالفعل"
+                              : "تحريك القسم للأسفل"
+                          }
                           className={`p-1.5 rounded-lg transition-colors ${
                             isLast
-                              ? 'text-slate-300 cursor-not-allowed'
-                              : 'text-slate-600 hover:text-brand-deep hover:bg-white shadow-2xs cursor-pointer'
+                              ? "text-slate-300 cursor-not-allowed"
+                              : "text-slate-600 hover:text-brand-deep hover:bg-white shadow-2xs cursor-pointer"
                           }`}
                         >
                           <ArrowDown className="w-3.5 h-3.5" />
@@ -723,7 +858,7 @@ export default function AdminMarketingPage() {
                   {/* Title & Emoji & Subtitle */}
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{sec.emoji || '🏷️'}</span>
+                      <span className="text-xl">{sec.emoji || "🏷️"}</span>
                       <h3 className="font-black text-lg text-slate-900 group-hover:text-brand-deep transition-colors">
                         {sec.title}
                       </h3>
@@ -741,7 +876,10 @@ export default function AdminMarketingPage() {
                       <>
                         <span className="inline-flex items-center gap-1 font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
                           <Package className="w-3 h-3 text-brand-teal" />
-                          تحديد يدوي: <strong>{sec.productIds.length}</strong> مستحضر
+                          تحديد يدوي: <strong>
+                            {sec.productIds.length}
+                          </strong>{" "}
+                          مستحضر
                         </span>
                         <span className="inline-flex items-center gap-1 font-black text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200/60">
                           <Layers className="w-3 h-3 text-brand-teal" />
@@ -757,7 +895,7 @@ export default function AdminMarketingPage() {
                         <span className="font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">
                           الحد الأقصى: <strong>{sec.limit || 8}</strong>
                         </span>
-                        {sec.targetCategory && sec.targetCategory !== 'all' && (
+                        {sec.targetCategory && sec.targetCategory !== "all" && (
                           <span className="font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200/60">
                             القسم: {getCategoryName(sec.targetCategory)}
                           </span>
@@ -769,7 +907,9 @@ export default function AdminMarketingPage() {
                   {/* Thumbnails Preview Strip */}
                   <div className="pt-2">
                     <span className="text-[11px] font-bold text-slate-400 block mb-2">
-                      {isManual ? 'معاينة المستحضرات المحددة:' : 'معاينة المنتجات المستعلم عنها تلقائياً:'}
+                      {isManual
+                        ? "معاينة المستحضرات المحددة:"
+                        : "معاينة المنتجات المستعلم عنها تلقائياً:"}
                     </span>
                     {assignedProducts.length > 0 ? (
                       <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -801,7 +941,9 @@ export default function AdminMarketingPage() {
                       </div>
                     ) : (
                       <div className="p-3 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-center text-xs text-slate-400">
-                        {isManual ? 'لم يتم تعيين منتجات بعد. اضغط هنا للإضافة.' : 'سيتم جلب المنتجات تلقائياً بحسب شروط الاستعلام.'}
+                        {isManual
+                          ? "لم يتم تعيين منتجات بعد. اضغط هنا للإضافة."
+                          : "سيتم جلب المنتجات تلقائياً بحسب شروط الاستعلام."}
                       </div>
                     )}
                   </div>
@@ -811,7 +953,11 @@ export default function AdminMarketingPage() {
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-brand-deep group-hover:text-brand-teal transition-colors">
                   <span className="flex items-center gap-1.5">
                     <Settings className="w-4 h-4" />
-                    <span>{isManual ? 'إدارة المنتجات وإعدادات القسم' : 'تعديل شروط الاستعلام التلقائي'}</span>
+                    <span>
+                      {isManual
+                        ? "إدارة المنتجات وإعدادات القسم"
+                        : "تعديل شروط الاستعلام التلقائي"}
+                    </span>
                   </span>
                   <ChevronLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" />
                 </div>
@@ -828,7 +974,9 @@ export default function AdminMarketingPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <span className="text-xs font-bold text-slate-400">تعديل مواصفات وإعدادات القسم</span>
+                <span className="text-xs font-bold text-slate-400">
+                  تعديل مواصفات وإعدادات القسم
+                </span>
                 <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
                   <span>{editingSection.emoji}</span>
                   <span>{editingSection.title}</span>
@@ -860,7 +1008,12 @@ export default function AdminMarketingPage() {
                     type="text"
                     required
                     value={editingSection.title}
-                    onChange={(e) => setEditingSection({ ...editingSection, title: e.target.value })}
+                    onChange={(e) =>
+                      setEditingSection({
+                        ...editingSection,
+                        title: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50 text-slate-900 text-sm font-bold"
                   />
                 </div>
@@ -876,7 +1029,12 @@ export default function AdminMarketingPage() {
                     type="text"
                     required
                     value={editingSection.badge}
-                    onChange={(e) => setEditingSection({ ...editingSection, badge: e.target.value })}
+                    onChange={(e) =>
+                      setEditingSection({
+                        ...editingSection,
+                        badge: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50 text-slate-900 text-sm font-bold"
                   />
                 </div>
@@ -898,8 +1056,13 @@ export default function AdminMarketingPage() {
                       type="text"
                       dir="ltr"
                       placeholder="Ex: Soins Rénovateurs et Hydratation"
-                      value={editingSection.titleFr || ''}
-                      onChange={(e) => setEditingSection({ ...editingSection, titleFr: e.target.value })}
+                      value={editingSection.titleFr || ""}
+                      onChange={(e) =>
+                        setEditingSection({
+                          ...editingSection,
+                          titleFr: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold"
                     />
                   </div>
@@ -914,8 +1077,13 @@ export default function AdminMarketingPage() {
                       type="text"
                       dir="ltr"
                       placeholder="Ex: Skin Renewal and Hydration"
-                      value={editingSection.titleEn || ''}
-                      onChange={(e) => setEditingSection({ ...editingSection, titleEn: e.target.value })}
+                      value={editingSection.titleEn || ""}
+                      onChange={(e) =>
+                        setEditingSection({
+                          ...editingSection,
+                          titleEn: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold"
                     />
                   </div>
@@ -930,8 +1098,13 @@ export default function AdminMarketingPage() {
                       type="text"
                       dir="ltr"
                       placeholder="Ex: Nouveautés"
-                      value={editingSection.badgeTextFr || ''}
-                      onChange={(e) => setEditingSection({ ...editingSection, badgeTextFr: e.target.value })}
+                      value={editingSection.badgeTextFr || ""}
+                      onChange={(e) =>
+                        setEditingSection({
+                          ...editingSection,
+                          badgeTextFr: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold"
                     />
                   </div>
@@ -946,8 +1119,13 @@ export default function AdminMarketingPage() {
                       type="text"
                       dir="ltr"
                       placeholder="Ex: Featured"
-                      value={editingSection.badgeTextEn || ''}
-                      onChange={(e) => setEditingSection({ ...editingSection, badgeTextEn: e.target.value })}
+                      value={editingSection.badgeTextEn || ""}
+                      onChange={(e) =>
+                        setEditingSection({
+                          ...editingSection,
+                          badgeTextEn: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold"
                     />
                   </div>
@@ -965,8 +1143,13 @@ export default function AdminMarketingPage() {
                   <input
                     type="text"
                     placeholder="مثال: خصومات تصل حتى 30% على أشهر المستحضرات المعتمدة"
-                    value={editingSection.subtitle || ''}
-                    onChange={(e) => setEditingSection({ ...editingSection, subtitle: e.target.value })}
+                    value={editingSection.subtitle || ""}
+                    onChange={(e) =>
+                      setEditingSection({
+                        ...editingSection,
+                        subtitle: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50 text-slate-900 text-sm font-medium"
                   />
                 </div>
@@ -979,16 +1162,23 @@ export default function AdminMarketingPage() {
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
-                      value={editingSection.emoji || '🏷️'}
-                      onChange={(e) => setEditingSection({ ...editingSection, emoji: e.target.value })}
+                      value={editingSection.emoji || "🏷️"}
+                      onChange={(e) =>
+                        setEditingSection({
+                          ...editingSection,
+                          emoji: e.target.value,
+                        })
+                      }
                       className="w-14 px-2 py-2 text-center text-lg rounded-xl border border-slate-200 bg-slate-50 font-bold"
                     />
                     <div className="flex gap-1 overflow-x-auto text-base">
-                      {['🏷️', '💎', '🔥', '🌿', '💧'].map((em) => (
+                      {["🏷️", "💎", "🔥", "🌿", "💧"].map((em) => (
                         <button
                           key={em}
                           type="button"
-                          onClick={() => setEditingSection({ ...editingSection, emoji: em })}
+                          onClick={() =>
+                            setEditingSection({ ...editingSection, emoji: em })
+                          }
                           className="p-1 hover:bg-slate-100 rounded-lg"
                         >
                           {em}
@@ -1011,8 +1201,13 @@ export default function AdminMarketingPage() {
                     type="text"
                     dir="ltr"
                     placeholder="Ex: Jusqu'à 30% de réduction..."
-                    value={editingSection.subtitleFr || ''}
-                    onChange={(e) => setEditingSection({ ...editingSection, subtitleFr: e.target.value })}
+                    value={editingSection.subtitleFr || ""}
+                    onChange={(e) =>
+                      setEditingSection({
+                        ...editingSection,
+                        subtitleFr: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium"
                   />
                 </div>
@@ -1027,8 +1222,13 @@ export default function AdminMarketingPage() {
                     type="text"
                     dir="ltr"
                     placeholder="Ex: Up to 30% off selected products..."
-                    value={editingSection.subtitleEn || ''}
-                    onChange={(e) => setEditingSection({ ...editingSection, subtitleEn: e.target.value })}
+                    value={editingSection.subtitleEn || ""}
+                    onChange={(e) =>
+                      setEditingSection({
+                        ...editingSection,
+                        subtitleEn: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-medium"
                   />
                 </div>
@@ -1044,11 +1244,16 @@ export default function AdminMarketingPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div
-                    onClick={() => setEditingSection({ ...editingSection, selectionType: 'manual' })}
+                    onClick={() =>
+                      setEditingSection({
+                        ...editingSection,
+                        selectionType: "manual",
+                      })
+                    }
                     className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
-                      editingSection.selectionType === 'manual'
-                        ? 'border-brand-deep bg-brand-deep/5 shadow-xs'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
+                      editingSection.selectionType === "manual"
+                        ? "border-brand-deep bg-brand-deep/5 shadow-xs"
+                        : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
                     <div className="flex items-center justify-between font-black text-sm text-slate-900 mb-1">
@@ -1056,16 +1261,22 @@ export default function AdminMarketingPage() {
                       <Package className="w-4 h-4 text-brand-teal" />
                     </div>
                     <p className="text-[11px] text-slate-500">
-                      البحث في الكتالوج واختيار قائمة منتجات معينة لعرضها بالترتيب المحدد.
+                      البحث في الكتالوج واختيار قائمة منتجات معينة لعرضها
+                      بالترتيب المحدد.
                     </p>
                   </div>
 
                   <div
-                    onClick={() => setEditingSection({ ...editingSection, selectionType: 'dynamic' })}
+                    onClick={() =>
+                      setEditingSection({
+                        ...editingSection,
+                        selectionType: "dynamic",
+                      })
+                    }
                     className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all ${
-                      editingSection.selectionType === 'dynamic'
-                        ? 'border-brand-deep bg-brand-deep/5 shadow-xs'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
+                      editingSection.selectionType === "dynamic"
+                        ? "border-brand-deep bg-brand-deep/5 shadow-xs"
+                        : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
                     <div className="flex items-center justify-between font-black text-sm text-slate-900 mb-1">
@@ -1073,13 +1284,14 @@ export default function AdminMarketingPage() {
                       <Zap className="w-4 h-4 text-brand-green" />
                     </div>
                     <p className="text-[11px] text-slate-500">
-                      استعلام آلي من قاعدة البيانات بناءً على معايير (التخفيضات، الأكثر طلباً، القسم).
+                      استعلام آلي من قاعدة البيانات بناءً على معايير (التخفيضات،
+                      الأكثر طلباً، القسم).
                     </p>
                   </div>
                 </div>
 
                 {/* Conditional Sub-settings for Dynamic */}
-                {editingSection.selectionType === 'dynamic' && (
+                {editingSection.selectionType === "dynamic" && (
                   <div className="pt-3 border-t border-slate-200 space-y-4">
                     <div>
                       <FormLabelWithHelp
@@ -1088,8 +1300,13 @@ export default function AdminMarketingPage() {
                         helpText="المعيار البرمجي الذي تطبقه الدالة الذكية getResolvedProducts لجلب المنتجات (تخفيضات، الأكثر طلباً، الأحدث، إلخ)."
                       />
                       <select
-                        value={editingSection.dynamicCriteria || 'on_sale'}
-                        onChange={(e) => setEditingSection({ ...editingSection, dynamicCriteria: e.target.value as DynamicCriteria })}
+                        value={editingSection.dynamicCriteria || "on_sale"}
+                        onChange={(e) =>
+                          setEditingSection({
+                            ...editingSection,
+                            dynamicCriteria: e.target.value as DynamicCriteria,
+                          })
+                        }
                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-white text-slate-900 text-sm font-bold"
                       >
                         {DYNAMIC_CRITERIA_OPTIONS.map((opt) => (
@@ -1106,19 +1323,35 @@ export default function AdminMarketingPage() {
                         helpText="اختر فئة معينة لحصر الاستعلام التلقائي فيها (مثال: عروض العناية بالبشرة فقط)، أو اتركها 'كافة الأقسام' للاستعلام من عموم المتجر."
                       />
                       <select
-                        value={editingSection.targetCategory || 'all'}
-                        onChange={(e) => setEditingSection({ ...editingSection, targetCategory: e.target.value === 'all' ? null : e.target.value })}
+                        value={editingSection.targetCategory || "all"}
+                        onChange={(e) =>
+                          setEditingSection({
+                            ...editingSection,
+                            targetCategory:
+                              e.target.value === "all" ? null : e.target.value,
+                          })
+                        }
                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-white text-slate-900 text-sm font-bold"
                       >
-                        <option value="all">🌐 كافة الأقسام (المتجر بالكامل - استعلام عام)</option>
+                        <option value="all">
+                          🌐 كافة الأقسام (المتجر بالكامل - استعلام عام)
+                        </option>
                         {categoriesList.map((cat) => (
                           <React.Fragment key={cat._id || cat.slug}>
-                            <option value={cat._id || cat.slug} className="font-bold text-slate-900">
+                            <option
+                              value={cat._id || cat.slug}
+                              className="font-bold text-slate-900"
+                            >
                               📁 {cat.nameAr || cat.name}
                             </option>
                             {cat.subCategories?.map((sub: any) => (
-                              <option key={sub._id || sub.slug} value={sub._id || sub.slug} className="text-slate-600">
-                                &nbsp;&nbsp;&nbsp;&nbsp;↳ {sub.nameAr || sub.name}
+                              <option
+                                key={sub._id || sub.slug}
+                                value={sub._id || sub.slug}
+                                className="text-slate-600"
+                              >
+                                &nbsp;&nbsp;&nbsp;&nbsp;↳{" "}
+                                {sub.nameAr || sub.name}
                               </option>
                             ))}
                           </React.Fragment>
@@ -1138,7 +1371,7 @@ export default function AdminMarketingPage() {
                           min={1}
                           max={50}
                           required
-                          value={editingSection.limit || ''}
+                          value={editingSection.limit || ""}
                           onChange={(e) =>
                             setEditingSection({
                               ...editingSection,
@@ -1147,18 +1380,27 @@ export default function AdminMarketingPage() {
                           }
                           className="w-28 px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-white text-slate-900 text-sm font-black text-center"
                         />
-                        <span className="text-xs font-bold text-slate-500">مستحضرات كحد أقصى</span>
+                        <span className="text-xs font-bold text-slate-500">
+                          مستحضرات كحد أقصى
+                        </span>
                         <div className="flex items-center gap-1.5 mr-auto">
-                          <span className="text-[11px] text-slate-400 font-medium">خيارات سريعة:</span>
+                          <span className="text-[11px] text-slate-400 font-medium">
+                            خيارات سريعة:
+                          </span>
                           {[4, 6, 8, 12, 16, 24].map((n) => (
                             <button
                               key={n}
                               type="button"
-                              onClick={() => setEditingSection({ ...editingSection, limit: n })}
+                              onClick={() =>
+                                setEditingSection({
+                                  ...editingSection,
+                                  limit: n,
+                                })
+                              }
                               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                                 editingSection.limit === n
-                                  ? 'bg-brand-deep text-white shadow-2xs'
-                                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                                  ? "bg-brand-deep text-white shadow-2xs"
+                                  : "bg-slate-100 hover:bg-slate-200 text-slate-700"
                               }`}
                             >
                               {n}
@@ -1171,7 +1413,7 @@ export default function AdminMarketingPage() {
                 )}
 
                 {/* Conditional Sub-settings for Manual (Product picker trigger) */}
-                {editingSection.selectionType === 'manual' && (
+                {editingSection.selectionType === "manual" && (
                   <div className="pt-3 border-t border-slate-200 space-y-3">
                     <div className="p-3.5 rounded-2xl bg-teal-50/70 border border-teal-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5">
@@ -1180,24 +1422,31 @@ export default function AdminMarketingPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-black text-slate-900">سعة العرض:</span>
+                            <span className="text-xs font-black text-slate-900">
+                              سعة العرض:
+                            </span>
                             <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-teal-600 text-white">
                               مفتوح بالكامل (بدون تقييد)
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-500 mt-0.5">
-                            في التحديد اليدوي، يتم عرض كافة المنتجات التي تختارها من الكتالوج (حالياً: <strong>{editingSection.productIds.length}</strong> مستحضر) بالترتيب المنسق دون اقتطاع.
+                            في التحديد اليدوي، يتم عرض كافة المنتجات التي
+                            تختارها من الكتالوج (حالياً:{" "}
+                            <strong>{editingSection.productIds.length}</strong>{" "}
+                            مستحضر) بالترتيب المنسق دون اقتطاع.
                           </p>
                         </div>
                       </div>
 
                       <button
                         type="button"
-                        onClick={() => openProductPicker('editing_section')}
+                        onClick={() => openProductPicker("editing_section")}
                         className="px-4 py-2 rounded-xl bg-brand-deep text-white text-xs font-bold shadow-xs hover:bg-brand-teal transition-colors shrink-0 inline-flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>اختيار المنتجات ({editingSection.productIds.length})</span>
+                        <span>
+                          اختيار المنتجات ({editingSection.productIds.length})
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -1211,8 +1460,13 @@ export default function AdminMarketingPage() {
                   helpText="اختر نمط خلفية مخصص لإبراز القسم عن بقية الأقسام في الصفحة الرئيسية."
                 />
                 <select
-                  value={editingSection.backgroundColor || ''}
-                  onChange={(e) => setEditingSection({ ...editingSection, backgroundColor: e.target.value })}
+                  value={editingSection.backgroundColor || ""}
+                  onChange={(e) =>
+                    setEditingSection({
+                      ...editingSection,
+                      backgroundColor: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-slate-50 text-slate-900 text-sm font-bold"
                 >
                   {BACKGROUND_OPTIONS.map((bg) => (
@@ -1234,7 +1488,7 @@ export default function AdminMarketingPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-7 py-2.5 rounded-xl bg-gradient-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-xs shadow-md shadow-brand-deep/20 hover:opacity-95"
+                  className="px-7 py-2.5 rounded-xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-xs shadow-md shadow-brand-deep/20 hover:opacity-95"
                 >
                   حفظ وتطبيق التعديلات
                 </button>
@@ -1442,11 +1696,11 @@ export default function AdminMarketingPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div
-                    onClick={() => setNewSelectionType('manual')}
+                    onClick={() => setNewSelectionType("manual")}
                     className={`p-3 rounded-2xl border-2 cursor-pointer transition-all ${
-                      newSelectionType === 'manual'
-                        ? 'border-brand-deep bg-brand-deep/5 shadow-xs'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
+                      newSelectionType === "manual"
+                        ? "border-brand-deep bg-brand-deep/5 shadow-xs"
+                        : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
                     <div className="flex items-center justify-between font-black text-xs text-slate-900 mb-1">
@@ -1459,11 +1713,11 @@ export default function AdminMarketingPage() {
                   </div>
 
                   <div
-                    onClick={() => setNewSelectionType('dynamic')}
+                    onClick={() => setNewSelectionType("dynamic")}
                     className={`p-3 rounded-2xl border-2 cursor-pointer transition-all ${
-                      newSelectionType === 'dynamic'
-                        ? 'border-brand-deep bg-brand-deep/5 shadow-xs'
-                        : 'border-slate-200 bg-white hover:border-slate-300'
+                      newSelectionType === "dynamic"
+                        ? "border-brand-deep bg-brand-deep/5 shadow-xs"
+                        : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
                     <div className="flex items-center justify-between font-black text-xs text-slate-900 mb-1">
@@ -1476,7 +1730,7 @@ export default function AdminMarketingPage() {
                   </div>
                 </div>
 
-                {newSelectionType === 'dynamic' ? (
+                {newSelectionType === "dynamic" ? (
                   <div className="pt-3 border-t border-slate-200 space-y-4">
                     <div>
                       <FormLabelWithHelp
@@ -1486,7 +1740,11 @@ export default function AdminMarketingPage() {
                       />
                       <select
                         value={newDynamicCriteria}
-                        onChange={(e) => setNewDynamicCriteria(e.target.value as DynamicCriteria)}
+                        onChange={(e) =>
+                          setNewDynamicCriteria(
+                            e.target.value as DynamicCriteria,
+                          )
+                        }
                         className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold"
                       >
                         {DYNAMIC_CRITERIA_OPTIONS.map((c) => (
@@ -1507,15 +1765,25 @@ export default function AdminMarketingPage() {
                         onChange={(e) => setNewTargetCategory(e.target.value)}
                         className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold"
                       >
-                        <option value="all">🌐 كافة الأقسام (المتجر بالكامل - استعلام عام)</option>
+                        <option value="all">
+                          🌐 كافة الأقسام (المتجر بالكامل - استعلام عام)
+                        </option>
                         {categoriesList.map((cat) => (
                           <React.Fragment key={cat._id || cat.slug}>
-                            <option value={cat._id || cat.slug} className="font-bold text-slate-900">
+                            <option
+                              value={cat._id || cat.slug}
+                              className="font-bold text-slate-900"
+                            >
                               📁 {cat.nameAr || cat.name}
                             </option>
                             {cat.subCategories?.map((sub: any) => (
-                              <option key={sub._id || sub.slug} value={sub._id || sub.slug} className="text-slate-600">
-                                &nbsp;&nbsp;&nbsp;&nbsp;↳ {sub.nameAr || sub.name}
+                              <option
+                                key={sub._id || sub.slug}
+                                value={sub._id || sub.slug}
+                                className="text-slate-600"
+                              >
+                                &nbsp;&nbsp;&nbsp;&nbsp;↳{" "}
+                                {sub.nameAr || sub.name}
                               </option>
                             ))}
                           </React.Fragment>
@@ -1535,13 +1803,21 @@ export default function AdminMarketingPage() {
                           min={1}
                           max={50}
                           required
-                          value={newLimit || ''}
-                          onChange={(e) => setNewLimit(Math.max(1, parseInt(e.target.value) || 1))}
+                          value={newLimit || ""}
+                          onChange={(e) =>
+                            setNewLimit(
+                              Math.max(1, parseInt(e.target.value) || 1),
+                            )
+                          }
                           className="w-28 px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-teal bg-white text-slate-900 text-sm font-black text-center"
                         />
-                        <span className="text-xs font-bold text-slate-500">مستحضرات كحد أقصى</span>
+                        <span className="text-xs font-bold text-slate-500">
+                          مستحضرات كحد أقصى
+                        </span>
                         <div className="flex items-center gap-1 mr-auto">
-                          <span className="text-[11px] text-slate-400 font-medium">خيارات سريعة:</span>
+                          <span className="text-[11px] text-slate-400 font-medium">
+                            خيارات سريعة:
+                          </span>
                           {[4, 6, 8, 12, 16, 24].map((n) => (
                             <button
                               key={n}
@@ -1549,8 +1825,8 @@ export default function AdminMarketingPage() {
                               onClick={() => setNewLimit(n)}
                               className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
                                 newLimit === n
-                                  ? 'bg-brand-deep text-white shadow-2xs'
-                                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                                  ? "bg-brand-deep text-white shadow-2xs"
+                                  : "bg-slate-100 hover:bg-slate-200 text-slate-700"
                               }`}
                             >
                               {n}
@@ -1569,24 +1845,30 @@ export default function AdminMarketingPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-black text-slate-900">سعة العرض:</span>
+                            <span className="text-xs font-black text-slate-900">
+                              سعة العرض:
+                            </span>
                             <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-teal-600 text-white">
                               مفتوح بالكامل (بدون تقييد)
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-500 mt-0.5">
-                            في التحديد اليدوي، يتم عرض كافة المنتجات التي تختارها من الكتالوج (تم اختيار {newSelectedProductIds.length} مستحضر) دون اقتطاع.
+                            في التحديد اليدوي، يتم عرض كافة المنتجات التي
+                            تختارها من الكتالوج (تم اختيار{" "}
+                            {newSelectedProductIds.length} مستحضر) دون اقتطاع.
                           </p>
                         </div>
                       </div>
 
                       <button
                         type="button"
-                        onClick={() => openProductPicker('new_section')}
+                        onClick={() => openProductPicker("new_section")}
                         className="px-4 py-2 rounded-xl bg-brand-deep text-white text-xs font-bold hover:bg-brand-teal transition-colors shrink-0 inline-flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>اختيار المنتجات ({newSelectedProductIds.length})</span>
+                        <span>
+                          اختيار المنتجات ({newSelectedProductIds.length})
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -1640,7 +1922,7 @@ export default function AdminMarketingPage() {
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-xs shadow-md shadow-brand-deep/20 hover:opacity-95 disabled:opacity-50 inline-flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-xs shadow-md shadow-brand-deep/20 hover:opacity-95 disabled:opacity-50 inline-flex items-center gap-2"
                 >
                   {isCreating && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>إنشاء القسم وحفظه</span>
@@ -1706,10 +1988,10 @@ export default function AdminMarketingPage() {
 
               <div className="flex items-center justify-between text-xs pt-1">
                 <span className="font-bold text-slate-600">
-                  تم تحديد{' '}
+                  تم تحديد{" "}
                   <strong className="text-brand-deep font-black text-sm">
                     {pickerSelectedIds.length}
-                  </strong>{' '}
+                  </strong>{" "}
                   من أصل {catalogProducts.length} مستحضر
                 </span>
 
@@ -1718,7 +2000,11 @@ export default function AdminMarketingPage() {
                     type="button"
                     onClick={() => {
                       const allFilteredIds = filteredProducts.map((p) => p._id);
-                      setPickerSelectedIds(Array.from(new Set([...pickerSelectedIds, ...allFilteredIds])));
+                      setPickerSelectedIds(
+                        Array.from(
+                          new Set([...pickerSelectedIds, ...allFilteredIds]),
+                        ),
+                      );
                     }}
                     className="text-xs text-brand-teal hover:underline font-bold"
                   >
@@ -1752,19 +2038,21 @@ export default function AdminMarketingPage() {
                       onClick={() => toggleProductSelection(product._id)}
                       className={`p-3 rounded-2xl flex items-center justify-between gap-4 cursor-pointer transition-all ${
                         isSelected
-                          ? 'bg-brand-deep/5 border-2 border-brand-deep/40 shadow-xs'
-                          : 'hover:bg-slate-50 border-2 border-transparent'
+                          ? "bg-brand-deep/5 border-2 border-brand-deep/40 shadow-xs"
+                          : "hover:bg-slate-50 border-2 border-transparent"
                       }`}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
                         <div
                           className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                             isSelected
-                              ? 'bg-brand-deep text-white shadow-xs'
-                              : 'border-2 border-slate-300 bg-white'
+                              ? "bg-brand-deep text-white shadow-xs"
+                              : "border-2 border-slate-300 bg-white"
                           }`}
                         >
-                          {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          {isSelected && (
+                            <Check className="w-3.5 h-3.5 stroke-3" />
+                          )}
                         </div>
 
                         <div className="w-14 h-14 rounded-xl bg-white border border-slate-200 relative shrink-0 overflow-hidden flex items-center justify-center p-1">
@@ -1787,7 +2075,9 @@ export default function AdminMarketingPage() {
                             {product.name}
                           </h4>
                           <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
-                            <span className="font-semibold text-brand-teal">{product.brand}</span>
+                            <span className="font-semibold text-brand-teal">
+                              {product.brand}
+                            </span>
                             <span>•</span>
                             <span>{product.category}</span>
                           </div>
@@ -1796,13 +2086,14 @@ export default function AdminMarketingPage() {
 
                       <div className="text-left shrink-0">
                         <span className="font-black text-xs sm:text-sm text-brand-deep block">
-                          {product.price.toLocaleString('ar-DZ')} دج
+                          {product.price.toLocaleString("ar-DZ")} دج
                         </span>
-                        {product.originalPrice && product.originalPrice > product.price && (
-                          <span className="text-[10px] text-slate-400 line-through block">
-                            {product.originalPrice.toLocaleString('ar-DZ')} دج
-                          </span>
-                        )}
+                        {product.originalPrice &&
+                          product.originalPrice > product.price && (
+                            <span className="text-[10px] text-slate-400 line-through block">
+                              {product.originalPrice.toLocaleString("ar-DZ")} دج
+                            </span>
+                          )}
                       </div>
                     </div>
                   );
@@ -1812,7 +2103,11 @@ export default function AdminMarketingPage() {
 
             <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-4">
               <span className="text-xs font-bold text-slate-700">
-                المجموع المحدد: <strong className="text-brand-deep">{pickerSelectedIds.length}</strong> مستحضر
+                المجموع المحدد:{" "}
+                <strong className="text-brand-deep">
+                  {pickerSelectedIds.length}
+                </strong>{" "}
+                مستحضر
               </span>
 
               <div className="flex items-center gap-3">
@@ -1826,7 +2121,7 @@ export default function AdminMarketingPage() {
                 <button
                   type="button"
                   onClick={confirmProductSelection}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-xs shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-xs shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
                   <span>تأكيد الإضافة ({pickerSelectedIds.length})</span>

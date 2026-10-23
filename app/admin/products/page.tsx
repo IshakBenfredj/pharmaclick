@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import {
   Package,
   Plus,
@@ -19,26 +19,32 @@ import {
   Loader2,
   AlertCircle,
   X,
-} from 'lucide-react';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, MockProduct } from '@/lib/data/mockData';
+} from "lucide-react";
+import {
+  MOCK_PRODUCTS,
+  MOCK_CATEGORIES,
+  MockProduct,
+} from "@/lib/data/mockData";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<MockProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedStockStatus, setSelectedStockStatus] = useState<string>('all');
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(
-    null
-  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedStockStatus, setSelectedStockStatus] = useState<string>("all");
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
-      if (searchTerm.trim()) params.set('search', searchTerm.trim());
-      if (selectedCategory !== 'all') params.set('category', selectedCategory);
-      if (selectedStockStatus !== 'all') params.set('stock', selectedStockStatus);
+      if (searchTerm.trim()) params.set("search", searchTerm.trim());
+      if (selectedCategory !== "all") params.set("category", selectedCategory);
+      if (selectedStockStatus !== "all")
+        params.set("stock", selectedStockStatus);
 
       const res = await fetch(`/api/admin/products?${params.toString()}`);
       if (res.ok) {
@@ -51,7 +57,7 @@ export default function AdminProductsPage() {
       // Fallback
       setProducts(MOCK_PRODUCTS);
     } catch (err: any) {
-      console.warn('Error fetching products from backend:', err);
+      console.warn("Error fetching products from backend:", err);
       setProducts(MOCK_PRODUCTS);
     } finally {
       setIsLoading(false);
@@ -66,29 +72,33 @@ export default function AdminProductsPage() {
   }, [searchTerm, selectedCategory, selectedStockStatus]);
 
   const handleDeleteProduct = async (id: string, name: string) => {
-    if (!confirm(`هل أنت متأكد من حذف المستحضر: "${name}" من المتجر وقاعدة البيانات؟`)) {
+    if (
+      !confirm(
+        `هل أنت متأكد من حذف المستحضر: "${name}" من المتجر وقاعدة البيانات؟`,
+      )
+    ) {
       return;
     }
 
     try {
       const res = await fetch(`/api/admin/products?id=${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       const data = await res.json();
 
       if (res.ok && data.success) {
         setProducts((prev) => prev.filter((p) => p._id !== id));
         setFeedback({
-          type: 'success',
+          type: "success",
           message: `تم حذف "${name}" بنجاح من قاعدة البيانات`,
         });
       } else {
-        throw new Error(data.message || 'فشل في حذف المستحضر');
+        throw new Error(data.message || "فشل في حذف المستحضر");
       }
     } catch (err: any) {
       setFeedback({
-        type: 'error',
-        message: err.message || 'حدث خطأ أثناء محاولة حذف المستحضر',
+        type: "error",
+        message: err.message || "حدث خطأ أثناء محاولة حذف المستحضر",
       });
     }
   };
@@ -99,13 +109,13 @@ export default function AdminProductsPage() {
       {feedback && (
         <div
           className={`p-4 rounded-2xl border text-xs sm:text-sm flex items-center justify-between gap-3 shadow-md animate-in fade-in slide-in-from-top-2 duration-200 ${
-            feedback.type === 'success'
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+            feedback.type === "success"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+              : "bg-red-50 border-red-200 text-red-800"
           }`}
         >
           <div className="flex items-center gap-2.5 font-bold">
-            {feedback.type === 'success' ? (
+            {feedback.type === "success" ? (
               <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             ) : (
               <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
@@ -126,24 +136,30 @@ export default function AdminProductsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-            <Link href="/admin" className="hover:text-brand-deep transition-colors">
+            <Link
+              href="/admin"
+              className="hover:text-brand-deep transition-colors"
+            >
               لوحة التحكم
             </Link>
             <span>/</span>
-            <span className="text-slate-800 font-semibold">إدارة المستحضرات والمنتجات</span>
+            <span className="text-slate-800 font-semibold">
+              إدارة المستحضرات والمنتجات
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3">
             <Package className="w-7 h-7 text-brand-deep" />
             قائمة المستحضرات والمنتجات ({products.length})
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            إدارة الأسعار، الخصومات، صور المستحضرات المرفوعة، ومتابعة المخزون مباشرة من قاعدة البيانات.
+            إدارة الأسعار، الخصومات، صور المستحضرات المرفوعة، ومتابعة المخزون
+            مباشرة من قاعدة البيانات.
           </p>
         </div>
 
         <Link
           href="/admin/products/new"
-          className="px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 self-start sm:self-auto cursor-pointer"
+          className="px-5 py-3 rounded-2xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-5 h-5" />
           <span>إضافة مستحضر جديد</span>
@@ -153,7 +169,7 @@ export default function AdminProductsPage() {
       {/* Filters & Search Toolbar */}
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
         {/* Search */}
-        <div className="relative flex-1 min-w-[240px]">
+        <div className="relative flex-1 min-w-60">
           <input
             type="text"
             placeholder="ابحث بالاسم، الماركة، أو الرابط..."
@@ -165,7 +181,7 @@ export default function AdminProductsPage() {
         </div>
 
         {/* Category Filter */}
-        <div className="flex items-center gap-2 min-w-[180px]">
+        <div className="flex items-center gap-2 min-w-45">
           <Filter className="w-4 h-4 text-slate-400 shrink-0" />
           <select
             value={selectedCategory}
@@ -182,7 +198,7 @@ export default function AdminProductsPage() {
         </div>
 
         {/* Stock Filter */}
-        <div className="min-w-[160px]">
+        <div className="min-w-40">
           <select
             value={selectedStockStatus}
             onChange={(e) => setSelectedStockStatus(e.target.value)}
@@ -201,13 +217,19 @@ export default function AdminProductsPage() {
         {isLoading ? (
           <div className="p-16 text-center space-y-3">
             <Loader2 className="w-8 h-8 text-brand-teal animate-spin mx-auto" />
-            <p className="text-xs font-bold text-slate-500">جاري تحميل المستحضرات...</p>
+            <p className="text-xs font-bold text-slate-500">
+              جاري تحميل المستحضرات...
+            </p>
           </div>
         ) : products.length === 0 ? (
           <div className="p-16 text-center space-y-3">
             <Package className="w-12 h-12 text-slate-300 mx-auto" />
-            <h3 className="font-extrabold text-base text-slate-700">لم يتم العثور على أي مستحضرات</h3>
-            <p className="text-xs text-slate-400">جرب تغيير كلمات البحث أو الفلاتر المختارة.</p>
+            <h3 className="font-extrabold text-base text-slate-700">
+              لم يتم العثور على أي مستحضرات
+            </h3>
+            <p className="text-xs text-slate-400">
+              جرب تغيير كلمات البحث أو الفلاتر المختارة.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -224,7 +246,10 @@ export default function AdminProductsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {products.map((product) => (
-                  <tr key={product._id} className="hover:bg-slate-50/70 transition-colors">
+                  <tr
+                    key={product._id}
+                    className="hover:bg-slate-50/70 transition-colors"
+                  >
                     {/* Product Info & Thumb */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
@@ -259,7 +284,9 @@ export default function AdminProductsPage() {
 
                     {/* Category & Brand */}
                     <td className="py-3 px-4">
-                      <div className="font-bold text-slate-800">{product.category}</div>
+                      <div className="font-bold text-slate-800">
+                        {product.category}
+                      </div>
                       <div className="text-[11px] text-brand-teal font-semibold">
                         {product.brand}
                       </div>
@@ -268,13 +295,14 @@ export default function AdminProductsPage() {
                     {/* Price */}
                     <td className="py-3 px-4">
                       <span className="font-black text-sm text-brand-deep block">
-                        {product.price.toLocaleString('ar-DZ')} دج
+                        {product.price.toLocaleString("ar-DZ")} دج
                       </span>
-                      {product.originalPrice && product.originalPrice > product.price && (
-                        <span className="text-[11px] text-slate-400 line-through block">
-                          {product.originalPrice.toLocaleString('ar-DZ')} دج
-                        </span>
-                      )}
+                      {product.originalPrice &&
+                        product.originalPrice > product.price && (
+                          <span className="text-[11px] text-slate-400 line-through block">
+                            {product.originalPrice.toLocaleString("ar-DZ")} دج
+                          </span>
+                        )}
                     </td>
 
                     {/* Discount */}
@@ -284,7 +312,9 @@ export default function AdminProductsPage() {
                           -{product.discountPercentage}% خصم
                         </span>
                       ) : (
-                        <span className="text-slate-400 text-[11px]">لا يوجد</span>
+                        <span className="text-slate-400 text-[11px]">
+                          لا يوجد
+                        </span>
                       )}
                     </td>
 
@@ -321,7 +351,9 @@ export default function AdminProductsPage() {
                         </Link>
                         <button
                           type="button"
-                          onClick={() => handleDeleteProduct(product._id, product.name)}
+                          onClick={() =>
+                            handleDeleteProduct(product._id, product.name)
+                          }
                           className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                           title="حذف المستحضر"
                         >

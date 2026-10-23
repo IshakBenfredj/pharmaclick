@@ -62,6 +62,29 @@ export function R2ImageUploader({
     setUploadProgress(15);
     setStatusMessage(null);
 
+    // التحقق الأمني من الحجم والامتداد (الحد الأقصى 10MB)
+    const MAX_SIZE = 10 * 1024 * 1024;
+    const allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+
+    if (!allowedExts.includes(ext)) {
+      setIsUploading(false);
+      setStatusMessage({
+        type: 'error',
+        text: `امتداد الملف غير مدعوم (.${ext}). يرجى اختيار صورة بصيغة JPG أو PNG أو WEBP فقط.`,
+      });
+      return;
+    }
+
+    if (file.size > MAX_SIZE) {
+      setIsUploading(false);
+      setStatusMessage({
+        type: 'error',
+        text: `حجم الصورة (${(file.size / (1024 * 1024)).toFixed(1)} ميجابايت) يتجاوز الحد الأقصى المسموح به (10 ميجابايت).`,
+      });
+      return;
+    }
+
     // Create immediate local preview
     const localBlob = URL.createObjectURL(file);
     setPreviewUrl(localBlob);
@@ -75,6 +98,7 @@ export function R2ImageUploader({
         body: JSON.stringify({
           filename: file.name,
           contentType: file.type || 'image/jpeg',
+          fileSize: file.size,
           folder,
         }),
       });

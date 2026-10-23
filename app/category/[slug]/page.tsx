@@ -20,16 +20,32 @@ export async function generateMetadata({ params }: CategoryPageProps) {
   const { slug } = await params;
   let categoryName = "القسم";
   let description = "تصفح مستحضرات العناية والصحة المعتمدة في PharmaClick مع توصيل لكافة الـ 69 ولاية.";
+  let image = "/images/default-cat.webp";
 
   const mockCat = MOCK_CATEGORIES.find((c) => c.slug === slug);
   if (mockCat) {
     categoryName = mockCat.nameAr;
     if (mockCat.descriptionAr) description = mockCat.descriptionAr;
+    if (mockCat.image) image = mockCat.image;
   }
 
+  const title = `${categoryName} | PharmaClick`;
+
   return {
-    title: `${categoryName} | PharmaClick`,
+    title,
     description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images: [{ url: image, alt: categoryName }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
@@ -51,13 +67,13 @@ export default async function CategoryDetailPage({
     try {
       await connectToDatabase();
 
-      let catDoc = await Category.findOne({ slug, isActive: { $ne: false } })
+      let catDoc: any = await Category.findOne({ slug, isActive: { $ne: false } })
         .populate("subCategories")
         .lean();
 
       // في حال كان الـ slug لقسم فرعي وليس رئيسياً
       if (catDoc && catDoc.parentCategory) {
-        const parent = await Category.findById(catDoc.parentCategory)
+        const parent: any = await Category.findById(catDoc.parentCategory)
           .populate("subCategories")
           .lean();
         if (parent) {
@@ -71,18 +87,23 @@ export default async function CategoryDetailPage({
           _id: catDoc._id.toString(),
           nameAr: catDoc.nameAr,
           nameFr: catDoc.nameFr,
+          nameEn: catDoc.nameEn,
           slug: catDoc.slug,
           icon: catDoc.icon,
           image: catDoc.image || "/images/default-cat.webp",
           descriptionAr: catDoc.descriptionAr,
           descriptionFr: catDoc.descriptionFr,
+          descriptionEn: catDoc.descriptionEn,
           subCategories: (catDoc.subCategories || []).map((s: any) => ({
             _id: s._id?.toString(),
             nameAr: s.nameAr,
             nameFr: s.nameFr,
+            nameEn: s.nameEn,
             slug: s.slug,
             image: s.image,
             descriptionAr: s.descriptionAr,
+            descriptionFr: s.descriptionFr,
+            descriptionEn: s.descriptionEn,
           })),
         };
 
@@ -103,11 +124,13 @@ export default async function CategoryDetailPage({
         _id: mockCat._id,
         nameAr: mockCat.nameAr,
         nameFr: mockCat.nameFr,
+        nameEn: mockCat.nameEn,
         slug: mockCat.slug,
         icon: mockCat.icon,
         image: mockCat.image,
         descriptionAr: mockCat.descriptionAr,
         descriptionFr: mockCat.descriptionFr,
+        descriptionEn: mockCat.descriptionEn,
         subCategories: mockCat.subCategories || [],
       };
     } else {
@@ -121,11 +144,13 @@ export default async function CategoryDetailPage({
           _id: parentWithSub._id,
           nameAr: parentWithSub.nameAr,
           nameFr: parentWithSub.nameFr,
+          nameEn: parentWithSub.nameEn,
           slug: parentWithSub.slug,
           icon: parentWithSub.icon,
           image: parentWithSub.image,
           descriptionAr: parentWithSub.descriptionAr,
           descriptionFr: parentWithSub.descriptionFr,
+          descriptionEn: parentWithSub.descriptionEn,
           subCategories: parentWithSub.subCategories || [],
         };
       }

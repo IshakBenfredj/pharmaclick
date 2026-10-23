@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   ChevronDown,
   ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { Button } from "../ui/Button";
@@ -41,8 +42,10 @@ interface CategoryNavItem {
 
 function NavigationPills() {
   const pathname = usePathname();
-  const { t, getLocalized } = useLanguage();
+  const { t, getLocalized, direction } = useLanguage();
   const [openDropdownSlug, setOpenDropdownSlug] = useState<string | null>(null);
+  const ChevronNext = direction === "rtl" ? ChevronLeft : ChevronRight;
+  const ArrowNext = direction === "rtl" ? "←" : "→";
   const [topCategories, setTopCategories] = useState<CategoryNavItem[]>(() =>
     MOCK_CATEGORIES.slice(0, 5).map((c) => ({
       _id: c._id,
@@ -50,7 +53,7 @@ function NavigationPills() {
       nameFr: c.nameFr,
       slug: c.slug,
       subCategories: c.subCategories,
-    }))
+    })),
   );
 
   useEffect(() => {
@@ -84,7 +87,7 @@ function NavigationPills() {
   }, []);
 
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2 overflow-visible py-0.5">
+    <div className="flex items-center gap-1 sm:gap-1.5 overflow-visible py-0.5 whitespace-nowrap">
       {/* 1. الرئيسية */}
       <Link
         href="/"
@@ -121,7 +124,34 @@ function NavigationPills() {
         <span>{t("allCategories")}</span>
       </Link>
 
-      {/* 3. أشهر الفئات من قاعدة البيانات مع القوائم المنسدلة عند التحويم */}
+      {/* 4. الماركات المعتمدة */}
+      <Link
+        href="/brands"
+        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap cursor-pointer text-xs font-bold ${
+          pathname === "/brands"
+            ? "bg-brand-teal text-white shadow-xs"
+            : "text-slate-600 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
+        }`}
+      >
+        <span>{t("certifiedBrands")}</span>
+      </Link>
+
+      {/* 5. العروض والتخفيضات */}
+      <Link
+        href="/offers"
+        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap cursor-pointer text-xs font-bold ${
+          pathname === "/offers"
+            ? "bg-brand-teal text-white shadow-xs"
+            : "text-slate-600 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
+        }`}
+      >
+        <span>{t("offersAndDiscounts")}</span>
+        <span className="bg-brand-green text-white text-[9px] font-black px-1.5 py-0.5 rounded-full tracking-wider">
+          {t("discount")}
+        </span>
+      </Link>
+
+      {/* 6. أشهر الفئات من قاعدة البيانات مع القوائم المنسدلة عند التحويم */}
       {topCategories.map((cat) => {
         const hasSubs =
           Array.isArray(cat.subCategories) && cat.subCategories.length > 0;
@@ -148,7 +178,7 @@ function NavigationPills() {
                 href={`/category/${cat.slug}`}
                 className="cursor-pointer hover:underline"
               >
-                {getLocalized(cat, 'name') || cat.nameAr}
+                {getLocalized(cat, "name") || cat.nameAr}
               </Link>
               {hasSubs && (
                 <button
@@ -157,13 +187,15 @@ function NavigationPills() {
                     e.preventDefault();
                     e.stopPropagation();
                     setOpenDropdownSlug((prev) =>
-                      prev === cat.slug ? null : cat.slug
+                      prev === cat.slug ? null : cat.slug,
                     );
                   }}
                   className={`p-0.5 rounded-full hover:bg-slate-100/60 transition-colors cursor-pointer ${
-                    isActive ? "text-white" : "text-slate-400 hover:text-brand-deep"
+                    isActive
+                      ? "text-white"
+                      : "text-slate-400 hover:text-brand-deep"
                   }`}
-                  aria-label={`تصفح أقسام ${getLocalized(cat, 'name') || cat.nameAr}`}
+                  aria-label={`تصفح أقسام ${getLocalized(cat, "name") || cat.nameAr}`}
                 >
                   <ChevronDown
                     className={`w-3 h-3 transition-transform duration-200 shrink-0 ${
@@ -177,30 +209,30 @@ function NavigationPills() {
             {/* القائمة المنسدلة للفئات الفرعية (Hover & Toggle Dropdown) */}
             {hasSubs && (
               <div
-                className={`absolute top-full right-0 pt-1.5 transition-all duration-200 z-50 ${
+                className={`absolute top-full rtl:right-0 ltr:left-0 pt-1.5 transition-all duration-200 z-50 ${
                   isOpen
                     ? "opacity-100 translate-y-0 pointer-events-auto"
                     : "opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto"
                 }`}
               >
-                <div className="bg-white rounded-2xl shadow-xl border border-slate-100/90 p-3 min-w-[270px] text-right">
+                <div className="bg-white rounded-2xl shadow-xl border border-slate-100/90 p-3 min-w-67.5 text-start">
                   {/* ترويسة القائمة المنسدلة ورابط جلب كافة المنتجات */}
                   <div className="px-2.5 py-1.5 border-b border-slate-100/80 mb-2 flex items-center justify-between">
                     <span className="text-[11px] font-black text-slate-400">
-                      {getLocalized(cat, 'name') || cat.nameAr}
+                      {getLocalized(cat, "name") || cat.nameAr}
                     </span>
                     <Link
                       href={`/category/${cat.slug}`}
                       className="text-[11px] font-bold text-brand-teal hover:text-brand-deep hover:underline"
                     >
-                      {t("viewAllResults")} ←
+                      {t("viewAllResults")} {ArrowNext}
                     </Link>
                   </div>
 
                   {/* قائمة الفئات الفرعية بالصور والعناوين */}
                   <div className="space-y-1">
                     {cat.subCategories!.map((sub, sIdx) => {
-                      const subName = getLocalized(sub, 'name') || sub.nameAr;
+                      const subName = getLocalized(sub, "name") || sub.nameAr;
                       return (
                         <Link
                           key={sIdx}
@@ -225,45 +257,17 @@ function NavigationPills() {
                               </span>
                             </div>
                           </div>
-                        <ChevronLeft className="w-3.5 h-3.5 text-slate-300 group-hover/item:text-brand-teal transition-transform group-hover/item:-translate-x-0.5 shrink-0" />
-                      </Link>
-                    );
-                  })}
+                          <ChevronNext className="w-3.5 h-3.5 text-slate-300 group-hover/item:text-brand-teal transition-transform shrink-0" />
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      );
-    })}
-
-      {/* 4. الماركات المعتمدة */}
-      <Link
-        href="/brands"
-        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap cursor-pointer text-xs font-bold ${
-          pathname === "/brands"
-            ? "bg-brand-teal text-white shadow-xs"
-            : "text-slate-600 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
-        }`}
-      >
-        <span>الماركات المعتمدة</span>
-      </Link>
-
-      {/* 5. العروض والتخفيضات */}
-      <Link
-        href="/offers"
-        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full transition-all duration-200 select-none whitespace-nowrap cursor-pointer text-xs font-bold ${
-          pathname === "/offers"
-            ? "bg-brand-teal text-white shadow-xs"
-            : "text-slate-600 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200/80"
-        }`}
-      >
-        <span>العروض والتخفيضات</span>
-        <span className="bg-brand-green text-white text-[9px] font-black px-1.5 py-0.5 rounded-full tracking-wider">
-          خصومات
-        </span>
-      </Link>
-
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -273,17 +277,37 @@ const HeaderContent: React.FC = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { totalItemsCount, openDrawer } = useCart();
-  const { t } = useLanguage();
+  const { t, getLocalized, direction, language } = useLanguage();
+  const ArrowNext = direction === "rtl" ? "←" : "→";
 
   // بحث فوري متجاوب
-  const QUICK_SUGGESTIONS = [
-    "سيروم هيالورونيك",
-    "واقي شمس",
-    "سيرافي",
-    "بايوديرما",
-    "أوميغا 3",
-    "أجهزة قياس",
-  ];
+  const QUICK_SUGGESTIONS =
+    language === "fr"
+      ? [
+          "Sérum Hyaluronique",
+          "Protection Solaire",
+          "CeraVe",
+          "Bioderma",
+          "Oméga 3",
+          "Compléments",
+        ]
+      : language === "en"
+        ? [
+            "Hyaluronic Serum",
+            "Sunscreen",
+            "CeraVe",
+            "Bioderma",
+            "Omega 3",
+            "Supplements",
+          ]
+        : [
+            "سيروم هيالورونيك",
+            "واقي شمس",
+            "سيرافي",
+            "بايوديرما",
+            "أوميغا 3",
+            "أجهزة قياس",
+          ];
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -338,12 +362,12 @@ const HeaderContent: React.FC = () => {
                 onFocus={() => setIsSearchFocused(true)}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t("searchPlaceholder")}
-                className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 pr-11 pl-28 text-sm focus:outline-none focus:border-brand-teal focus:ring-2 focus:ring-brand-teal/20 transition-all text-slate-800 placeholder-slate-400"
+                className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 rtl:pr-11 rtl:pl-28 ltr:pl-11 ltr:pr-28 text-sm focus:outline-none focus:border-brand-teal focus:ring-2 focus:ring-brand-teal/20 transition-all text-slate-800 placeholder-slate-400"
               />
-              <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute rtl:right-4 ltr:left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <button
                 type="submit"
-                className="absolute left-1.5 top-1/2 -translate-y-1/2 bg-brand-deep hover:bg-brand-teal text-white text-xs font-bold px-5 py-2 rounded-full transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
+                className="absolute rtl:left-1.5 ltr:right-1.5 top-1/2 -translate-y-1/2 bg-brand-deep hover:bg-brand-teal text-white text-xs font-bold px-5 py-2 rounded-full transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
               >
                 <span>{t("searchButton")}</span>
               </button>
@@ -356,11 +380,11 @@ const HeaderContent: React.FC = () => {
                   className="fixed inset-0 z-40"
                   onClick={() => setIsSearchFocused(false)}
                 />
-                <div className="absolute top-full right-0 left-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden text-right animate-in fade-in duration-150">
+                <div className="absolute top-full right-0 left-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden text-start animate-in fade-in duration-150">
                   {searchQuery.trim().length === 0 ? (
                     <div className="p-4">
                       <p className="text-xs font-bold text-slate-400 mb-2.5">
-                        عمليات البحث الأكثر شيوعاً:
+                        {t("quickSuggestions")}
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {QUICK_SUGGESTIONS.map((tag, idx) => (
@@ -381,7 +405,7 @@ const HeaderContent: React.FC = () => {
                   ) : (
                     <div>
                       <div className="p-3 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                        <span>نتائج البحث الفوري</span>
+                        <span>{t("liveSearchResults")}</span>
                         <span className="font-bold text-brand-teal">
                           {
                             MOCK_PRODUCTS.filter(
@@ -393,7 +417,7 @@ const HeaderContent: React.FC = () => {
                                 p.category.includes(searchQuery.trim()),
                             ).length
                           }{" "}
-                          مستحضر
+                          {t("productUnit")}
                         </span>
                       </div>
 
@@ -415,56 +439,70 @@ const HeaderContent: React.FC = () => {
                               p.category.includes(searchQuery.trim()),
                           )
                             .slice(0, 5)
-                            .map((prod) => (
-                              <Link
-                                key={prod._id}
-                                href={`/product/${prod.slug}`}
-                                onClick={() => setIsSearchFocused(false)}
-                                className="flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors"
-                              >
-                                <img
-                                  src={prod.images[0]?.url}
-                                  alt={prod.name}
-                                  className="w-12 h-12 rounded-lg object-cover border border-slate-100 bg-white shrink-0"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold text-brand-teal">
-                                      {prod.brand}
-                                    </span>
-                                    <span className="text-[10px] text-slate-400">
-                                      • {prod.category}
-                                    </span>
-                                  </div>
-                                  <h4 className="text-xs font-bold text-slate-800 truncate">
-                                    {prod.name}
-                                  </h4>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-xs font-black text-brand-deep">
-                                      {prod.price.toLocaleString("ar-DZ")} دج
-                                    </span>
-                                    {prod.originalPrice && (
-                                      <span className="text-[10px] text-slate-400 line-through">
-                                        {prod.originalPrice.toLocaleString(
-                                          "ar-DZ",
-                                        )}{" "}
-                                        دج
+                            .map((prod) => {
+                              const displayName =
+                                getLocalized(prod, "name") || prod.name;
+                              return (
+                                <Link
+                                  key={prod._id}
+                                  href={`/product/${prod.slug}`}
+                                  onClick={() => setIsSearchFocused(false)}
+                                  className="flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors"
+                                >
+                                  <img
+                                    src={prod.images[0]?.url}
+                                    alt={displayName}
+                                    className="w-12 h-12 rounded-lg object-cover border border-slate-100 bg-white shrink-0"
+                                  />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-bold text-brand-teal">
+                                        {prod.brand}
                                       </span>
-                                    )}
+                                      <span className="text-[10px] text-slate-400">
+                                        •{" "}
+                                        {(() => {
+                                          const catObj = MOCK_CATEGORIES.find(
+                                            (c) =>
+                                              c.nameAr === prod.category ||
+                                              c.slug === prod.category,
+                                          );
+                                          return catObj
+                                            ? getLocalized(catObj, "name") ||
+                                                catObj.nameAr
+                                            : prod.category;
+                                        })()}
+                                      </span>
+                                    </div>
+                                    <h4 className="text-xs font-bold text-slate-800 truncate">
+                                      {displayName}
+                                    </h4>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                      <span className="text-xs font-black text-brand-deep">
+                                        {prod.price.toLocaleString()}{" "}
+                                        {t("currency")}
+                                      </span>
+                                      {prod.originalPrice && (
+                                        <span className="text-[10px] text-slate-400 line-through">
+                                          {prod.originalPrice.toLocaleString()}{" "}
+                                          {t("currency")}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
-                                </div>
-                              </Link>
-                            ))
+                                </Link>
+                              );
+                            })
                         ) : (
                           <div className="p-6 text-center">
                             <p className="text-xs text-slate-500 mb-2">
-                              لم نجد مستحضرات تطابق &quot;{searchQuery}&quot;
+                              {t("noResults")} &quot;{searchQuery}&quot;
                             </p>
                             <Link
                               href="/search"
                               className="text-xs text-brand-teal font-bold hover:underline"
                             >
-                              الانتقال إلى صفحة البحث الشامل أو التواصل معنا
+                              {t("viewAllResults")}
                             </Link>
                           </div>
                         )}
@@ -476,7 +514,8 @@ const HeaderContent: React.FC = () => {
                           onClick={() => handleSearchSubmit()}
                           className="text-xs font-bold text-brand-teal hover:text-brand-deep cursor-pointer"
                         >
-                          عرض كافة النتائج لـ &quot;{searchQuery}&quot; ←
+                          {t("viewAllResults")} &quot;{searchQuery}&quot;{" "}
+                          {ArrowNext}
                         </button>
                       </div>
                     </div>
@@ -495,7 +534,9 @@ const HeaderContent: React.FC = () => {
             >
               <Truck className="w-5 h-5 text-brand-teal" />
               <div className="flex flex-col text-start leading-tight">
-                <span className="text-[11px] text-slate-400">{t("trackOrderSub")}</span>
+                <span className="text-[11px] text-slate-400">
+                  {t("trackOrderSub")}
+                </span>
                 <span className="text-xs font-bold">{t("trackOrder")}</span>
               </div>
             </Link>
@@ -557,28 +598,34 @@ const HeaderContent: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="ابحث عن مستحضرات عناية، فيتامينات..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 pr-10 pl-4 text-xs focus:outline-none focus:border-brand-teal text-slate-800"
+              placeholder={t("searchPlaceholder")}
+              className="w-full bg-slate-50 border border-slate-200 rounded-full py-2.5 rtl:pr-10 rtl:pl-4 ltr:pl-10 ltr:pr-4 text-xs focus:outline-none focus:border-brand-teal text-slate-800"
             />
-            <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute rtl:right-3.5 ltr:left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           </div>
         </div>
       </div>
 
       {/* 3. شريط كبسولات الأقسام (Pills Sub-Navigation Bar المستوحى حرفياً من المرجع بألوان PharmaClick) */}
       <nav className="border-t border-slate-100 bg-slate-50/70 hidden md:block relative z-30">
-        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between text-xs font-semibold gap-3">
-          <Suspense fallback={<div className="h-8 w-80 bg-slate-100 rounded-full animate-pulse" />}>
-            <NavigationPills />
-          </Suspense>
+        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between text-xs font-semibold gap-2">
+          <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar py-0.5">
+            <Suspense
+              fallback={
+                <div className="h-8 w-80 bg-slate-100 rounded-full animate-pulse" />
+              }
+            >
+              <NavigationPills />
+            </Suspense>
+          </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0 ps-3">
             <Link
               href="/contact"
-              className="flex items-center gap-1.5 text-brand-teal hover:text-brand-deep font-bold transition-colors"
+              className="flex items-center gap-1.5 text-brand-teal hover:text-brand-deep font-bold transition-colors whitespace-nowrap shrink-0"
             >
-              <Phone className="w-3.5 h-3.5 text-brand-turquoise" />
-              <span>{t("contactUs")}</span>
+              <Phone className="w-3.5 h-3.5 text-brand-turquoise shrink-0" />
+              <span className="whitespace-nowrap">{t("contactUs")}</span>
             </Link>
           </div>
         </div>
@@ -598,42 +645,42 @@ const HeaderContent: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
             >
-              العناية بالبشرة
+              {t("heroQuickSkincare")}
             </Link>
             <Link
               href="/category/sun-protection"
               onClick={() => setMobileMenuOpen(false)}
               className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
             >
-              واقيات الشمس
+              {t("catSunProtection")}
             </Link>
             <Link
               href="/category/vitamins"
               onClick={() => setMobileMenuOpen(false)}
               className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
             >
-              الفيتامينات والمكملات
+              {t("heroQuickVitamins")}
             </Link>
             <Link
-              href="/category/baby"
+              href="/category/haircare"
               onClick={() => setMobileMenuOpen(false)}
               className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
             >
-              الأم والرضيع
+              {t("heroQuickHaircare")}
             </Link>
             <Link
-              href="/category/devices"
+              href="/categories"
               onClick={() => setMobileMenuOpen(false)}
               className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
             >
-              الأجهزة والمعدات
+              {t("allCategories")}
             </Link>
             <Link
               href="/brands"
               onClick={() => setMobileMenuOpen(false)}
               className="p-2.5 bg-slate-50 rounded-xl hover:bg-teal-50 hover:text-brand-teal"
             >
-              الماركات المعتمدة
+              {t("certifiedBrands")}
             </Link>
             <Link
               href="/offers"
@@ -664,7 +711,11 @@ const HeaderContent: React.FC = () => {
 
 export const Header: React.FC = () => {
   return (
-    <Suspense fallback={<header className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-xs h-20" />}>
+    <Suspense
+      fallback={
+        <header className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-xs h-20" />
+      }
+    >
       <HeaderContent />
     </Suspense>
   );

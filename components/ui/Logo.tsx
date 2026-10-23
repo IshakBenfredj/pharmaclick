@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface LogoProps {
   className?: string;
@@ -15,6 +16,7 @@ export const Logo: React.FC<LogoProps> = ({
   showText = true,
   variant = "horizontal",
 }) => {
+  const { t } = useLanguage();
   const sizeConfig = {
     sm: {
       icon: 32,
@@ -100,7 +102,7 @@ export const Logo: React.FC<LogoProps> = ({
         <span
           className={`text-[#64748b] font-medium tracking-wide ${sizeConfig.subtext}`}
         >
-          صحتك بنقرة واحدة
+          {t("logoSlogan")}
         </span>
       </div>
     </Link>

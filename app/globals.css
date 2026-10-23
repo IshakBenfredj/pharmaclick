@@ -2,17 +2,27 @@
 
 :root {
   /* PharmaClick Official Brand Palette */
-  --color-brand-deep: #064F68;
-  --color-brand-teal: #007F91;
-  --color-brand-turquoise: #00BFA5;
-  --color-brand-green: #00C853;
-  --color-brand-lime: #7CDE00;
-  --color-brand-white: #FFFFFF;
+  --color-brand-deep: #064f68;
+  --color-brand-teal: #007f91;
+  --color-brand-turquoise: #00bfa5;
+  --color-brand-green: #00c853;
+  --color-brand-lime: #7cde00;
+  --color-brand-white: #ffffff;
 
   /* Official Brand Gradients */
-  --gradient-pharma: linear-gradient(135deg, #064F68 0%, #007F91 50%, #00BFA5 100%);
-  --gradient-click: linear-gradient(135deg, #00BFA5 0%, #00C853 50%, #7CDE00 100%);
-  --gradient-badge: linear-gradient(135deg, #00C853 0%, #7CDE00 100%);
+  --linear-pharma: linear-gradient(
+    135deg,
+    #064f68 0%,
+    #007f91 50%,
+    #00bfa5 100%
+  );
+  --linear-click: linear-gradient(
+    135deg,
+    #00bfa5 0%,
+    #00c853 50%,
+    #7cde00 100%
+  );
+  --linear-badge: linear-gradient(135deg, #00c853 0%, #7cde00 100%);
 
   /* UI Neutral Colors */
   --bg-main: #f8fafc;
@@ -23,41 +33,43 @@
 }
 
 @theme {
-  --color-brand-deep: #064F68;
-  --color-brand-teal: #007F91;
-  --color-brand-turquoise: #00BFA5;
-  --color-brand-green: #00C853;
-  --color-brand-lime: #7CDE00;
+  --color-brand-deep: #064f68;
+  --color-brand-teal: #007f91;
+  --color-brand-turquoise: #00bfa5;
+  --color-brand-green: #00c853;
+  --color-brand-lime: #7cde00;
   --font-arabic: var(--font-ibm-plex-arabic);
   --font-latin: var(--font-poppins);
-  --font-sans: var(--font-ibm-plex-arabic), var(--font-poppins), system-ui, sans-serif;
+  --font-sans:
+    var(--font-ibm-plex-arabic), var(--font-poppins), system-ui, sans-serif;
 }
 
 body {
-  font-family: var(--font-ibm-plex-arabic), var(--font-poppins), system-ui, sans-serif;
+  font-family:
+    var(--font-ibm-plex-arabic), var(--font-poppins), system-ui, sans-serif;
 }
 
 /* Custom Utilities for Gradients and Glassmorphism */
-.bg-gradient-pharma {
-  background: var(--gradient-pharma);
+.bg-linear-pharma {
+  background: var(--linear-pharma);
 }
 
-.bg-gradient-click {
-  background: var(--gradient-click);
+.bg-linear-click {
+  background: var(--linear-click);
 }
 
-.bg-gradient-badge {
-  background: var(--gradient-badge);
+.bg-linear-badge {
+  background: var(--linear-badge);
 }
 
-.text-gradient-pharma {
-  background: var(--gradient-pharma);
+.text-linear-pharma {
+  background: var(--linear-pharma);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.text-gradient-click {
-  background: var(--gradient-click);
+.text-linear-click {
+  background: var(--linear-click);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -97,7 +109,7 @@ html {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #007F91;
+  background: #007f91;
 }
 
 /* Hide scrollbar for clean category pills */
@@ -110,5 +122,10 @@ html {
 }
 
 .hero-glow-pharma {
-  background: radial-gradient(circle, rgba(0, 191, 165, 0.18) 0%, rgba(6, 79, 104, 0.05) 50%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(0, 191, 165, 0.18) 0%,
+    rgba(6, 79, 104, 0.05) 50%,
+    transparent 70%
+  );
 }

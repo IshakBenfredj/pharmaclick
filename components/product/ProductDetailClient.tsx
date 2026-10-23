@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { MockProduct } from "@/lib/data/mockData";
+import { MockProduct, MOCK_CATEGORIES } from "@/lib/data/mockData";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -16,12 +16,8 @@ import {
   Plus,
   Minus,
   ShoppingBag,
-  Heart,
   Share2,
-  Tag,
   Star,
-  Info,
-  Package,
 } from "lucide-react";
 
 interface ProductDetailClientProps {
@@ -44,9 +40,16 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
   const [copiedLink, setCopiedLink] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const productName = getLocalized(product, 'name') || product.name;
-  const productDescription = getLocalized(product, 'description') || product.description;
-  const productUsage = getLocalized(product, 'usageInstructions') || product.usageInstructions;
+  const productName = getLocalized(product, "name") || product.name;
+  const productDescription =
+    getLocalized(product, "description") || product.description;
+  const productUsage =
+    getLocalized(product, "usageInstructions") || product.usageInstructions;
+  const productWarnings =
+    getLocalized(product, "healthWarnings") || product.healthWarnings;
+
+  const categoryObj = MOCK_CATEGORIES.find((c) => c.slug === product.categorySlug);
+  const categoryName = (categoryObj ? getLocalized(categoryObj, "name") : null) || product.category;
 
   const selectedVariant = product.variants?.[selectedVariantIndex];
   const finalPrice = product.price + (selectedVariant?.priceDelta || 0);
@@ -74,7 +77,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
         : (product.images?.[0] as any)?.url || "";
 
     const variantLabel = selectedVariant
-      ? `${selectedVariant.name || "الخيار"}: ${selectedVariant.option}`
+      ? `${selectedVariant.name || "Variant"}: ${selectedVariant.option}`
       : undefined;
 
     addItem(
@@ -94,7 +97,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
     setTimeout(() => setAddedToCart(false), 2500);
   };
 
-  const BreadcrumbArrow = direction === 'rtl' ? ChevronLeft : ChevronRight;
+  const BreadcrumbArrow = direction === "rtl" ? ChevronLeft : ChevronRight;
 
   return (
     <div className="space-y-12">
@@ -104,21 +107,21 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
         className="flex items-center gap-2 text-xs text-slate-500 flex-wrap"
       >
         <Link href="/" className="hover:text-brand-deep transition-colors">
-          {t('home') || 'الرئيسية'}
+          {t("home")}
         </Link>
         <BreadcrumbArrow className="w-3.5 h-3.5 text-slate-400" />
         <Link
           href="/products"
           className="hover:text-brand-deep transition-colors"
         >
-          {t('allProducts') || 'كل المنتجات'}
+          {t("allProducts")}
         </Link>
         <BreadcrumbArrow className="w-3.5 h-3.5 text-slate-400" />
         <Link
           href={`/category/${product.categorySlug}`}
           className="hover:text-brand-deep transition-colors"
         >
-          {product.category}
+          {categoryName}
         </Link>
         <BreadcrumbArrow className="w-3.5 h-3.5 text-slate-400" />
         <span className="font-bold text-brand-deep truncate max-w-xs">
@@ -128,7 +131,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
 
       {/* 2. شبكة تفاصيل المنتج الرئيسية (معرض الصور + البطاقة التفاعلية) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 bg-white rounded-3xl p-6 sm:p-10 border border-slate-100 shadow-xs">
-        {/* الجانب الأيمن: معرض الصور التفاعلي */}
+        {/* معرض الصور التفاعلي */}
         <div className="lg:col-span-6 flex flex-col-reverse sm:flex-row gap-4">
           {/* شريط الصور المصغرة (Thumbnails) */}
           {product.images.length > 1 && (
@@ -146,7 +149,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 >
                   <img
                     src={img.url}
-                    alt={img.alt || product.name}
+                    alt={img.alt || productName}
                     className="w-full h-full object-cover rounded-xl"
                   />
                 </button>
@@ -161,15 +164,15 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 product.images[selectedImageIndex]?.url ||
                 product.images[0]?.url
               }
-              alt={product.name}
+              alt={productName}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
 
-            {/* شارات الخصم والتوفر */}
+            {/* شارات الخصم */}
             <div className="absolute top-4 right-4 flex items-center gap-2">
               {discountPercent && discountPercent > 0 && (
                 <span className="bg-brand-green text-white text-xs font-black px-3 py-1.5 rounded-full shadow-md">
-                  خصم {discountPercent}%
+                  {t("discount")} {discountPercent}%
                 </span>
               )}
             </div>
@@ -179,19 +182,19 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               onClick={handleShare}
               type="button"
               className="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md text-slate-700 hover:text-brand-deep hover:bg-white flex items-center justify-center shadow-md transition-all cursor-pointer"
-              title="مشاركة رابط المستحضر"
+              title={t("shareProduct")}
             >
               <Share2 className="w-4 h-4" />
             </button>
             {copiedLink && (
               <span className="absolute top-14 left-4 bg-slate-900 text-white text-[11px] px-2.5 py-1 rounded-md shadow-md animate-in fade-in">
-                تم نسخ الرابط!
+                {t("linkCopied")}
               </span>
             )}
           </div>
         </div>
 
-        {/* الجانب الأيسر: تفاصيل الشراء، الأسعار، المتغيرات، وإضافة للسلة */}
+        {/* تفاصيل الشراء، الأسعار، المتغيرات، وإضافة للسلة */}
         <div className="lg:col-span-6 flex flex-col justify-between text-start">
           <div>
             {/* الماركة والتصنيف */}
@@ -206,7 +209,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                 <span>{product.rating}</span>
                 <span className="text-slate-400 font-normal">
-                  ({product.reviewsCount} تقييم)
+                  ({product.reviewsCount})
                 </span>
               </div>
             </div>
@@ -225,38 +228,41 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
             <div className="bg-slate-50/80 rounded-2xl p-4 sm:p-5 border border-slate-100 mb-6 flex items-baseline justify-between">
               <div>
                 <span className="text-xs text-slate-400 block mb-1">
-                  السعر المعتمد:
+                  {t("officialPrice")}
                 </span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl sm:text-3xl font-black text-brand-deep">
                     {finalPrice.toLocaleString()}
                   </span>
-                  <span className="text-sm font-bold text-slate-600">{t('currency') || 'دج'}</span>
+                  <span className="text-sm font-bold text-slate-600">
+                    {t("currency")}
+                  </span>
                   {originalPrice && (
-                    <span className="text-sm text-slate-400 line-through mr-2">
-                      {originalPrice.toLocaleString()} {t('currency') || 'دج'}
+                    <span className="text-sm text-slate-400 line-through">
+                      {originalPrice.toLocaleString()} {t("currency")}
                     </span>
                   )}
                 </div>
               </div>
 
               {discountPercent && discountPercent > 0 && originalPrice && (
-                <div className="text-left bg-emerald-50 border border-emerald-200/60 px-3 py-1.5 rounded-xl">
+                <div className="text-start bg-emerald-50 border border-emerald-200/60 px-3 py-1.5 rounded-xl">
                   <span className="text-[11px] font-bold text-brand-green block">
-                    وفرت في هذا العرض
+                    {t("youSaved")}
                   </span>
                   <span className="text-xs font-black text-emerald-700">
-                    {(originalPrice - finalPrice).toLocaleString("ar-DZ")} دج
+                    {(originalPrice - finalPrice).toLocaleString()}{" "}
+                    {t("currency")}
                   </span>
                 </div>
               )}
             </div>
 
-            {/* المتغيرات (الأحجام أو التراكيز) إن وجدت */}
+            {/* المتغيرات إن وجدت */}
             {product.variants && product.variants.length > 0 && (
               <div className="mb-6">
                 <span className="text-xs font-bold text-slate-700 block mb-2.5">
-                  اختر {product.variants[0].name}:
+                  {t("choose")} {product.variants[0].name}:
                 </span>
                 <div className="flex flex-wrap gap-2.5">
                   {product.variants.map((v, idx) => (
@@ -272,8 +278,8 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                     >
                       <span>{v.option}</span>
                       {v.priceDelta > 0 && (
-                        <span className="text-[10px] opacity-80 mr-1.5">
-                          (+{v.priceDelta} دج)
+                        <span className="text-[10px] opacity-80 mx-1">
+                          (+{v.priceDelta} {t("currency")})
                         </span>
                       )}
                     </button>
@@ -314,28 +320,28 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>
-                  {product.inStock ? "أضف إلى السلة" : "غير متوفر حالياً"}
+                  {product.inStock ? t("addToCart") : t("outOfStock")}
                 </span>
               </button>
 
               {/* رسالة النجاح عند الإضافة */}
               {addedToCart && (
                 <div className="w-full text-center text-xs font-bold text-brand-green bg-emerald-50 border border-emerald-200 py-2 rounded-xl animate-in fade-in">
-                  ✓ تمت إضافة المستحضر إلى سلة مشترياتك بنجاح!
+                  {t("addedToCartSuccess")}
                 </div>
               )}
             </div>
           </div>
 
-          {/* بطاقات الضمان والتوصيل الوطني لـ 69 ولاية */}
+          {/* بطاقات الضمان والتوصيل لـ 69 ولاية */}
           <div className="grid grid-cols-2 gap-3 pt-6 mt-6 border-t border-slate-100">
             <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-100 text-slate-700">
               <Truck className="w-5 h-5 text-brand-turquoise shrink-0" />
               <div className="text-[11px] leading-tight">
                 <span className="font-bold block text-slate-800">
-                  توصيل سريع لكافة الـ 69 ولاية
+                  {t("trust69Wilayas")}
                 </span>
-                <span className="text-slate-400">للمنزل أو لمكتب التوزيع</span>
+                <span className="text-slate-400">{t("footerDeliveryDesk")}</span>
               </div>
             </div>
 
@@ -343,10 +349,10 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               <ShieldCheck className="w-5 h-5 text-brand-green shrink-0" />
               <div className="text-[11px] leading-tight">
                 <span className="font-bold block text-slate-800">
-                  مستحضر أصلي ومضمون 100%
+                  {t("trust100Original")}
                 </span>
                 <span className="text-slate-400">
-                  من المخابر المعتمدة رسمياً
+                  {t("officialLabs")}
                 </span>
               </div>
             </div>
@@ -355,7 +361,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
       </div>
 
       {/* 3. تبويبات المعلومات والإرشادات الصحية */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs text-right">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs text-start">
         {/* أزرار التبويبات */}
         <div className="flex items-center gap-2 sm:gap-4 border-b border-slate-100 pb-4 overflow-x-auto">
           <button
@@ -367,7 +373,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
-            {t('usageTab') || 'طريقة وإرشادات الاستخدام'}
+            {t("usageTab")}
           </button>
 
           <button
@@ -379,7 +385,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
-            {t('warningsTab') || 'التحذيرات وموانع الاستعمال'}
+            {t("warningsTab")}
           </button>
 
           <button
@@ -391,7 +397,7 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 : "text-slate-600 hover:bg-slate-50"
             }`}
           >
-            {t('detailsTab') || 'المواصفات والتركيبة'}
+            {t("detailsTab")}
           </button>
         </div>
 
@@ -402,7 +408,10 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-brand-green shrink-0 mt-0.5" />
                 <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
-                  {getLocalized(product, 'usageInstructions') || product.usageInstructions || 'يرجى اتباع إرشادات الاستخدام المدونة على العبوة بدقة.'}
+                  {productUsage ||
+                    (direction === "rtl"
+                      ? "يرجى اتباع إرشادات الاستخدام المدونة على العبوة بدقة."
+                      : "Please follow the usage directions provided on the product packaging.")}
                 </p>
               </div>
             </div>
@@ -413,7 +422,10 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               <div className="flex items-start gap-3 bg-amber-50/70 p-4 rounded-2xl border border-amber-200/60">
                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <p className="text-xs sm:text-sm text-amber-900 leading-relaxed font-medium">
-                  {getLocalized(product, 'healthWarnings') || product.healthWarnings || 'للاستعمال الخارجي فقط. يحفظ بعيداً عن متناول الأطفال.'}
+                  {productWarnings ||
+                    (direction === "rtl"
+                      ? "للاستعمال الخارجي فقط. يحفظ بعيداً عن متناول الأطفال."
+                      : "For external use only. Keep out of reach of children.")}
                 </p>
               </div>
             </div>
@@ -422,27 +434,27 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
           {activeTab === "details" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="p-3 bg-slate-50 rounded-xl flex justify-between">
-                <span className="text-slate-400">العلامة التجارية:</span>
+                <span className="text-slate-400">{t("brandLabel")}</span>
                 <span className="font-bold text-slate-800">
                   {product.brand}
                 </span>
               </div>
               <div className="p-3 bg-slate-50 rounded-xl flex justify-between">
-                <span className="text-slate-400">التصنيف:</span>
+                <span className="text-slate-400">{t("categoryLabel")}</span>
                 <span className="font-bold text-slate-800">
-                  {product.category}
+                  {categoryName}
                 </span>
               </div>
               <div className="p-3 bg-slate-50 rounded-xl flex justify-between">
-                <span className="text-slate-400">الحجم أو العبوة:</span>
+                <span className="text-slate-400">{t("volumeLabel")}</span>
                 <span className="font-bold text-slate-800">
                   {product.sizeOrVolume}
                 </span>
               </div>
               <div className="p-3 bg-slate-50 rounded-xl flex justify-between">
-                <span className="text-slate-400">حالة التوفر بالمخزون:</span>
+                <span className="text-slate-400">{t("stockStatus")}</span>
                 <span className="font-bold text-brand-green">
-                  متوفر فوري ({product.stockQuantity} قطعة)
+                  {t("inStockImmediate")} ({product.stockQuantity} {t("units")})
                 </span>
               </div>
             </div>
@@ -455,14 +467,14 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
         <section className="space-y-6">
           <div className="flex items-center justify-between border-b border-slate-200 pb-3">
             <h2 className="text-lg sm:text-xl font-bold text-slate-900">
-              مستحضرات مشابهة قد تهمك
+              {t("relatedProductsTitle")}
             </h2>
             <Link
               href={`/category/${product.categorySlug}`}
               className="text-xs font-bold text-brand-teal hover:underline flex items-center gap-1"
             >
-              <span>مشاهدة المزيد</span>
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>{t("viewMore")}</span>
+              <BreadcrumbArrow className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -473,6 +485,9 @@ export const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 product={{
                   _id: p._id,
                   name: p.name,
+                  nameAr: p.nameAr,
+                  nameFr: p.nameFr,
+                  nameEn: p.nameEn,
                   slug: p.slug,
                   brand: p.brand,
                   price: p.price,

@@ -24,23 +24,82 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://pharmaclick.dz";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "PharmaClick | وجهتك الرقمية للصحة والعناية",
     template: "%s | PharmaClick",
   },
   description:
     "منصتك الرقمية الأولى للتسوق الصحي، العناية بالبشرة، المكملات الغذائية، ومستحضرات الجمال المعتمدة مع خدمة التوصيل السريع لكافة الـ 69 ولاية.",
-  manifest: "/manifest.json",
+  keywords: [
+    "PharmaClick",
+    "عناية بالبشرة",
+    "مستحضرات تجميل",
+    "مكملات غذائية",
+    "واقي شمس",
+    "توصيل 69 ولاية",
+    "الجزائر",
+    "صحة وجمال",
+  ],
+  authors: [{ name: "PharmaClick Team" }],
+  creator: "PharmaClick",
+  publisher: "PharmaClick",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "PharmaClick",
+  },
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/icons/icon-192x192.png",
+    apple: "/icons/icon-192x192.png",
+  },
+  openGraph: {
+    type: "website",
+    locale: "ar_DZ",
+    alternateLocale: ["fr_DZ", "en_US"],
+    url: siteUrl,
+    siteName: "PharmaClick",
+    title: "PharmaClick | وجهتك الرقمية للصحة والعناية",
+    description:
+      "منصتك الرقمية الأولى للتسوق الصحي، العناية بالبشرة، المكملات الغذائية، ومستحضرات الجمال المعتمدة مع خدمة التوصيل السريع لكافة الـ 69 ولاية.",
+    images: [
+      {
+        url: "/logo.png",
+        width: 800,
+        height: 600,
+        alt: "PharmaClick Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PharmaClick | وجهتك الرقمية للصحة والعناية",
+    description:
+      "مستحضرات عناية وصحة وجمال أصلية 100% مع شحن سريع ومضمون لكافة الـ 69 ولاية في الجزائر.",
+    images: ["/logo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
 import { LanguageProvider } from "@/context/LanguageContext";
 import { CartProvider } from "@/context/CartContext";
 import { CartDrawer } from "@/components/cart/CartDrawer";
+import PwaRegister from "@/components/pwa/PwaRegister";
+import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
 
 export default function RootLayout({
   children,
@@ -105,6 +164,8 @@ export default function RootLayout({
           <CartProvider>
             {children}
             <CartDrawer />
+            <PwaRegister />
+            <PwaInstallPrompt />
           </CartProvider>
         </LanguageProvider>
       </body>

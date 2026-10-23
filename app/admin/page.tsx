@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   TrendingUp,
   ShoppingBag,
@@ -16,9 +16,9 @@ import {
   CheckCircle2,
   Users,
   Eye,
-} from 'lucide-react';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '@/lib/data/mockData';
-import { TOTAL_ALGERIA_WILAYAS } from '@/lib/constants/wilayas';
+} from "lucide-react";
+import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/data/mockData";
+import { TOTAL_ALGERIA_WILAYAS } from "@/lib/constants/wilayas";
 
 interface DashboardStats {
   totalSales: number;
@@ -35,129 +35,140 @@ export default function AdminDashboardPage() {
     totalOrders: 64,
     pendingOrders: 8,
     deliveredOrders: 52,
-      totalProducts: MOCK_PRODUCTS.length,
-      lowStockCount: MOCK_PRODUCTS.filter((p) => p.stockQuantity < 10).length,
-    });
-  
-    const [recentOrders, setRecentOrders] = useState([
-      {
-        id: 'ORD-2026-948123',
-        customer: 'أحمد بن علي',
-        phone: '0550123456',
-        wilaya: 'الجزائر (16)',
-        totalAmount: 12400,
-        deliveryType: 'لباب المنزل',
-        status: 'pending',
-        date: 'اليوم، 11:20 ص',
-      },
-      {
-        id: 'ORD-2026-948122',
-        customer: 'فاطمة الزهراء قاسمي',
-        phone: '0661987654',
-        wilaya: 'وهران (31)',
-        totalAmount: 7600,
-        deliveryType: 'Stop Desk',
-        status: 'processing',
-        date: 'اليوم، 09:45 ص',
-      },
-      {
-        id: 'ORD-2026-948121',
-        customer: 'محمد لمين بوزيد',
-        phone: '0772345678',
-        wilaya: 'قسنطينة (25)',
-        totalAmount: 18200,
-        deliveryType: 'لباب المنزل',
-        status: 'shipped',
-        date: 'أمس',
-      },
-    ]);
+    totalProducts: MOCK_PRODUCTS.length,
+    lowStockCount: MOCK_PRODUCTS.filter((p) => p.stockQuantity < 10).length,
+  });
 
-    useEffect(() => {
-      const fetchDashboardData = async () => {
-        try {
-          const [ordersRes, productsRes] = await Promise.all([
-            fetch('/api/admin/orders'),
-            fetch('/api/admin/products'),
-          ]);
+  const [recentOrders, setRecentOrders] = useState([
+    {
+      id: "ORD-2026-948123",
+      customer: "أحمد بن علي",
+      phone: "0550123456",
+      wilaya: "الجزائر (16)",
+      totalAmount: 12400,
+      deliveryType: "لباب المنزل",
+      status: "pending",
+      date: "اليوم، 11:20 ص",
+    },
+    {
+      id: "ORD-2026-948122",
+      customer: "فاطمة الزهراء قاسمي",
+      phone: "0661987654",
+      wilaya: "وهران (31)",
+      totalAmount: 7600,
+      deliveryType: "Stop Desk",
+      status: "processing",
+      date: "اليوم، 09:45 ص",
+    },
+    {
+      id: "ORD-2026-948121",
+      customer: "محمد لمين بوزيد",
+      phone: "0772345678",
+      wilaya: "قسنطينة (25)",
+      totalAmount: 18200,
+      deliveryType: "لباب المنزل",
+      status: "shipped",
+      date: "أمس",
+    },
+  ]);
 
-          if (ordersRes.ok) {
-            const ordersData = await ordersRes.json();
-            if (ordersData.success && Array.isArray(ordersData.orders)) {
-              const list = ordersData.orders;
-              const totalSales = list.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
-              const pendingOrders = list.filter((o: any) => o.status === 'pending').length;
-              const deliveredOrders = list.filter((o: any) => o.status === 'delivered').length;
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [ordersRes, productsRes] = await Promise.all([
+          fetch("/api/admin/orders"),
+          fetch("/api/admin/products"),
+        ]);
 
-              setStats((prev) => ({
-                ...prev,
-                totalSales: totalSales > 0 ? totalSales : prev.totalSales,
-                totalOrders: list.length,
-                pendingOrders,
-                deliveredOrders,
-              }));
+        if (ordersRes.ok) {
+          const ordersData = await ordersRes.json();
+          if (ordersData.success && Array.isArray(ordersData.orders)) {
+            const list = ordersData.orders;
+            const totalSales = list.reduce(
+              (sum: number, o: any) => sum + (o.totalAmount || 0),
+              0,
+            );
+            const pendingOrders = list.filter(
+              (o: any) => o.status === "pending",
+            ).length;
+            const deliveredOrders = list.filter(
+              (o: any) => o.status === "delivered",
+            ).length;
 
-              if (list.length > 0) {
-                setRecentOrders(
-                  list.slice(0, 5).map((o: any) => ({
-                    id: o.orderNumber || o.id,
-                    customer: o.customerName,
-                    phone: o.phone,
-                    wilaya: `${o.wilaya} (${o.wilayaCode})`,
-                    totalAmount: o.totalAmount,
-                    deliveryType: o.deliveryType === 'home' ? 'لباب المنزل' : 'Stop Desk',
-                    status: o.status,
-                    date: o.createdAt ? new Date(o.createdAt).toLocaleDateString('ar-DZ') : 'اليوم',
-                  }))
-                );
-              }
+            setStats((prev) => ({
+              ...prev,
+              totalSales: totalSales > 0 ? totalSales : prev.totalSales,
+              totalOrders: list.length,
+              pendingOrders,
+              deliveredOrders,
+            }));
+
+            if (list.length > 0) {
+              setRecentOrders(
+                list.slice(0, 5).map((o: any) => ({
+                  id: o.orderNumber || o.id,
+                  customer: o.customerName,
+                  phone: o.phone,
+                  wilaya: `${o.wilaya} (${o.wilayaCode})`,
+                  totalAmount: o.totalAmount,
+                  deliveryType:
+                    o.deliveryType === "home" ? "لباب المنزل" : "Stop Desk",
+                  status: o.status,
+                  date: o.createdAt
+                    ? new Date(o.createdAt).toLocaleDateString("ar-DZ")
+                    : "اليوم",
+                })),
+              );
             }
           }
-
-          if (productsRes.ok) {
-            const productsData = await productsRes.json();
-            if (productsData.success && Array.isArray(productsData.products)) {
-              const plist = productsData.products;
-              const lowStockCount = plist.filter((p: any) => (p.stockQuantity ?? 10) < 10).length;
-              setStats((prev) => ({
-                ...prev,
-                totalProducts: plist.length,
-                lowStockCount,
-              }));
-            }
-          }
-        } catch (err) {
-          console.warn('Dashboard fetch error:', err);
         }
-      };
 
-      fetchDashboardData();
-    }, []);
+        if (productsRes.ok) {
+          const productsData = await productsRes.json();
+          if (productsData.success && Array.isArray(productsData.products)) {
+            const plist = productsData.products;
+            const lowStockCount = plist.filter(
+              (p: any) => (p.stockQuantity ?? 10) < 10,
+            ).length;
+            setStats((prev) => ({
+              ...prev,
+              totalProducts: plist.length,
+              lowStockCount,
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn("Dashboard fetch error:", err);
+      }
+    };
 
+    fetchDashboardData();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1 w-fit">
             <Clock className="w-3 h-3" />
             جديد قيد التأكيد
           </span>
         );
-      case 'processing':
+      case "processing":
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200 flex items-center gap-1 w-fit">
             <Package className="w-3 h-3" />
             قيد التجهيز
           </span>
         );
-      case 'shipped':
+      case "shipped":
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1 w-fit">
             <Truck className="w-3 h-3" />
             في طريق الشحن
           </span>
         );
-      case 'delivered':
+      case "delivered":
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1 w-fit">
             <CheckCircle2 className="w-3 h-3" />
@@ -181,14 +192,15 @@ export default function AdminDashboardPage() {
             نظرة عامة على نشاط المتجر
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            متابعة حية للمبيعات، تجهيز الطلبيات لكافة الـ {TOTAL_ALGERIA_WILAYAS} ولاية، وإدارة المخزون.
+            متابعة حية للمبيعات، تجهيز الطلبيات لكافة الـ{" "}
+            {TOTAL_ALGERIA_WILAYAS} ولاية، وإدارة المخزون.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
           <Link
             href="/admin/products/new"
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-deep to-brand-teal text-white font-bold text-xs sm:text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2"
+            className="px-4 py-2.5 rounded-xl bg-linear-to-r from-brand-deep to-brand-teal text-white font-bold text-xs sm:text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             <span>إضافة منتج جديد</span>
@@ -209,14 +221,16 @@ export default function AdminDashboardPage() {
         {/* Total Revenue */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">إجمالي المبيعات</span>
+            <span className="text-xs font-bold text-slate-500">
+              إجمالي المبيعات
+            </span>
             <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
           <div className="space-y-1">
             <div className="text-2xl sm:text-3xl font-black text-slate-900">
-              {stats.totalSales.toLocaleString('ar-DZ')}{' '}
+              {stats.totalSales.toLocaleString("ar-DZ")}{" "}
               <span className="text-sm font-bold text-slate-500">دج</span>
             </div>
             <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
@@ -229,7 +243,9 @@ export default function AdminDashboardPage() {
         {/* Total Orders */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">إجمالي الطلبات</span>
+            <span className="text-xs font-bold text-slate-500">
+              إجمالي الطلبات
+            </span>
             <div className="w-10 h-10 rounded-2xl bg-brand-deep/10 text-brand-deep flex items-center justify-center">
               <ShoppingBag className="w-5 h-5" />
             </div>
@@ -239,7 +255,11 @@ export default function AdminDashboardPage() {
               {stats.totalOrders}
             </div>
             <p className="text-[11px] text-slate-500 font-medium">
-              منها <strong className="text-amber-600 font-bold">{stats.pendingOrders} طلبات جديدة</strong> بحاجة للتأكيد
+              منها{" "}
+              <strong className="text-amber-600 font-bold">
+                {stats.pendingOrders} طلبات جديدة
+              </strong>{" "}
+              بحاجة للتأكيد
             </p>
           </div>
         </div>
@@ -247,7 +267,9 @@ export default function AdminDashboardPage() {
         {/* Total Products */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">المستحضرات المعروضة</span>
+            <span className="text-xs font-bold text-slate-500">
+              المستحضرات المعروضة
+            </span>
             <div className="w-10 h-10 rounded-2xl bg-cyan-50 text-brand-teal flex items-center justify-center">
               <Package className="w-5 h-5" />
             </div>
@@ -265,7 +287,9 @@ export default function AdminDashboardPage() {
         {/* Low Stock Alerts */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500">تنبيهات المخزون</span>
+            <span className="text-xs font-bold text-slate-500">
+              تنبيهات المخزون
+            </span>
             <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
               <AlertTriangle className="w-5 h-5" />
             </div>
@@ -319,22 +343,35 @@ export default function AdminDashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
+                  <tr
+                    key={order.id}
+                    className="hover:bg-slate-50/60 transition-colors"
+                  >
                     <td className="py-3.5 px-3 font-extrabold text-brand-deep">
                       {order.id}
                     </td>
                     <td className="py-3.5 px-3">
-                      <div className="font-bold text-slate-900">{order.customer}</div>
-                      <div className="text-[11px] text-slate-400 font-mono">{order.phone}</div>
+                      <div className="font-bold text-slate-900">
+                        {order.customer}
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono">
+                        {order.phone}
+                      </div>
                     </td>
                     <td className="py-3.5 px-3">
-                      <div className="font-semibold text-slate-800">{order.wilaya}</div>
-                      <div className="text-[11px] text-slate-500">{order.deliveryType}</div>
+                      <div className="font-semibold text-slate-800">
+                        {order.wilaya}
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        {order.deliveryType}
+                      </div>
                     </td>
                     <td className="py-3.5 px-3 font-black text-slate-900">
-                      {order.totalAmount.toLocaleString('ar-DZ')} دج
+                      {order.totalAmount.toLocaleString("ar-DZ")} دج
                     </td>
-                    <td className="py-3.5 px-3">{getStatusBadge(order.status)}</td>
+                    <td className="py-3.5 px-3">
+                      {getStatusBadge(order.status)}
+                    </td>
                     <td className="py-3.5 px-3 text-left text-slate-400 font-medium">
                       {order.date}
                     </td>
@@ -395,7 +432,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* National Coverage Status Box */}
-          <div className="bg-gradient-to-br from-brand-deep to-brand-teal text-white rounded-3xl p-6 shadow-md space-y-4">
+          <div className="bg-linear-to-br from-brand-deep to-brand-teal text-white rounded-3xl p-6 shadow-md space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs font-extrabold text-brand-turquoise bg-white/10 px-2.5 py-1 rounded-full">
                 المعيار الإداري المعتمد
@@ -403,9 +440,12 @@ export default function AdminDashboardPage() {
               <Truck className="w-5 h-5 text-brand-turquoise" />
             </div>
             <div className="space-y-1">
-              <h4 className="font-black text-xl">تغطية الـ {TOTAL_ALGERIA_WILAYAS} ولاية</h4>
+              <h4 className="font-black text-xl">
+                تغطية الـ {TOTAL_ALGERIA_WILAYAS} ولاية
+              </h4>
               <p className="text-xs text-slate-200 leading-relaxed">
-                النظام مهيأ للتوصيل المنزلي ومكاتب التوزيع Stop Desk لكافة ولايات الجزائر الـ 69 مع تفعيل الدفع عند الاستلام.
+                النظام مهيأ للتوصيل المنزلي ومكاتب التوزيع Stop Desk لكافة
+                ولايات الجزائر الـ 69 مع تفعيل الدفع عند الاستلام.
               </p>
             </div>
             <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs font-bold">

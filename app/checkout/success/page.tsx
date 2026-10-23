@@ -7,23 +7,24 @@ import {
   CheckCircle2,
   Copy,
   Check,
-  Truck,
-  PhoneCall,
   Package,
   ArrowRight,
-  ShieldCheck,
+  ArrowLeft,
   Search,
 } from "lucide-react";
-import { TOTAL_ALGERIA_WILAYAS } from "@/lib/constants/wilayas";
+import { useLanguage } from "@/context/LanguageContext";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("orderNumber") || "ORD-2026-CONFIRMED";
   const totalAmount = searchParams.get("total") || "";
-  const wilaya = searchParams.get("wilaya") || "الجزائر";
-  const estimatedDays = searchParams.get("days") || "24-48 ساعة";
+  const wilaya = searchParams.get("wilaya") || "";
+  const estimatedDays = searchParams.get("days") || "24-48h";
 
+  const { t, direction } = useLanguage();
   const [copied, setCopied] = useState(false);
+
+  const ArrowNext = direction === "rtl" ? ArrowLeft : ArrowRight;
 
   const handleCopy = () => {
     if (navigator?.clipboard) {
@@ -44,18 +45,21 @@ function SuccessContent() {
         {/* Title */}
         <div className="space-y-2">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-            تم استلام طلبك وتأكيده بنجاح! 🎉
+            {t("orderSuccessTitle")}
           </h1>
           <p className="text-sm text-slate-600 max-w-md mx-auto">
-            شكراً لثقتك في متجرنا. تم تسجيل طلبيتك بنجاح وجاري تحضيرها للشحن إلى
-            ولاية <strong className="text-brand-deep">{wilaya}</strong>.
+            {t("orderSuccessDesc")}{" "}
+            {wilaya && (
+              <strong className="text-brand-deep font-bold">{wilaya}</strong>
+            )}
+            .
           </p>
         </div>
 
         {/* Order Reference Box */}
         <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/80 max-w-md mx-auto space-y-2">
           <span className="text-xs text-slate-500 font-semibold block">
-            رقم طلبك المرجعي:
+            {t("orderRefNumber")}
           </span>
           <div className="flex items-center justify-center gap-3">
             <span className="font-mono font-black text-xl sm:text-2xl text-brand-deep tracking-wider">
@@ -63,18 +67,18 @@ function SuccessContent() {
             </span>
             <button
               onClick={handleCopy}
-              className="p-2 rounded-xl text-slate-500 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200 transition-all text-xs font-medium flex items-center gap-1"
-              title="نسخ رقم الطلب"
+              className="p-2 rounded-xl text-slate-500 hover:text-brand-deep hover:bg-white border border-transparent hover:border-slate-200 transition-all text-xs font-medium flex items-center gap-1 cursor-pointer"
+              title={t("copyOrderNumber")}
             >
               {copied ? (
                 <>
                   <Check className="w-4 h-4 text-brand-green" />
-                  <span className="text-brand-green font-bold">تم النسخ</span>
+                  <span className="text-brand-green font-bold">{t("copied")}</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-4 h-4" />
-                  <span>نسخ</span>
+                  <span>{t("copy")}</span>
                 </>
               )}
             </button>
@@ -82,19 +86,19 @@ function SuccessContent() {
 
           {totalAmount && (
             <div className="pt-2 border-t border-slate-200/60 text-xs text-slate-600">
-              المبلغ الإجمالي للدفع عند الاستلام:{" "}
+              {t("totalAmountCod")}{" "}
               <strong className="text-slate-900 font-extrabold text-sm">
-                {Number(totalAmount).toLocaleString("ar-DZ")} دج
+                {Number(totalAmount).toLocaleString()} {t("currency")}
               </strong>
             </div>
           )}
         </div>
 
         {/* What Happens Next Steps */}
-        <div className="text-right p-5 rounded-2xl bg-linear-to-r from-brand-deep/5 to-brand-teal/5 border border-brand-teal/15 space-y-3">
+        <div className="text-start p-5 rounded-2xl bg-linear-to-r from-brand-deep/5 to-brand-teal/5 border border-brand-teal/15 space-y-3">
           <h3 className="font-extrabold text-sm text-brand-deep flex items-center gap-2">
             <Package className="w-4 h-4 text-brand-teal" />
-            ما الذي سيحدث بعد ذلك؟
+            {t("whatHappensNext")}
           </h3>
           <ul className="space-y-2.5 text-xs text-slate-700">
             <li className="flex items-start gap-2.5">
@@ -102,8 +106,7 @@ function SuccessContent() {
                 1
               </div>
               <span>
-                <strong>اتصال هاتفي للتأكيد:</strong> سيتواصل معك أحد ممثلي خدمة
-                العملاء هاتفياً خلال ساعات لتأكيد عنوان التسليم بدقة.
+                <strong>{t("step1PhoneTitle")}</strong> {t("step1PhoneDesc")}
               </span>
             </li>
             <li className="flex items-start gap-2.5">
@@ -111,9 +114,7 @@ function SuccessContent() {
                 2
               </div>
               <span>
-                <strong>تجهيز الطرد والشحن:</strong> يتم تغليف المنتجات بعناية
-                وتسليمها لشركة التوصيل (المدة التقديرية للوصول:{" "}
-                <strong>{estimatedDays}</strong>).
+                <strong>{t("step2ShippingTitle")}</strong> {t("step2ShippingDesc")} ({estimatedDays})
               </span>
             </li>
             <li className="flex items-start gap-2.5">
@@ -121,8 +122,7 @@ function SuccessContent() {
                 3
               </div>
               <span>
-                <strong>الدفع عند الاستلام (COD):</strong> تدفع المبلغ نقدًا
-                لعون التوصيل فقط عند استلام طردك وتفقده.
+                <strong>{t("step3CodTitle")}</strong> {t("step3CodDesc")}
               </span>
             </li>
           </ul>
@@ -135,39 +135,25 @@ function SuccessContent() {
             className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-linear-to-r from-brand-deep to-brand-teal text-white font-bold text-sm shadow-lg shadow-brand-deep/15 hover:opacity-95 transition-all inline-flex items-center justify-center gap-2"
           >
             <Search className="w-4 h-4" />
-            <span>تتبع حالة طلبيتك</span>
+            <span>{t("trackOrderStatus")}</span>
           </Link>
           <Link
             href="/"
             className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors inline-flex items-center justify-center gap-2"
           >
-            <span>العودة للتسوق</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>{t("backToShopping")}</span>
+            <ArrowNext className="w-4 h-4" />
           </Link>
         </div>
-
-        {/* Trust Note */}
-        <p className="text-[11px] text-slate-400 pt-2">
-          خدمة التوصيل تغطي كافة الولايات الـ {TOTAL_ALGERIA_WILAYAS} الجزائرية
-          • ضمان أصالة 100%
-        </p>
       </div>
     </div>
   );
 }
 
-export default function CheckoutSuccessPage() {
+export default function OrderSuccessPage() {
   return (
-    <div className="min-h-screen bg-slate-50/70">
-      <Suspense
-        fallback={
-          <div className="min-h-[60vh] flex items-center justify-center">
-            <div className="w-10 h-10 border-4 border-brand-teal/20 border-t-brand-teal rounded-full animate-spin" />
-          </div>
-        }
-      >
-        <SuccessContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={<div className="max-w-md mx-auto p-12 text-center text-slate-400">Loading...</div>}>
+      <SuccessContent />
+    </Suspense>
   );
 }

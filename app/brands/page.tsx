@@ -1,101 +1,103 @@
 import React from "react";
-import Link from "next/link";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { BrandsClientView, BrandItemData } from "@/components/brands/BrandsClientView";
+import { connectToDatabase } from "@/lib/mongodb";
+import { Brand, Product } from "@/models";
 import { MOCK_BRANDS, MOCK_PRODUCTS } from "@/lib/data/mockData";
-import { ChevronLeft, Award, Globe, ShoppingBag } from "lucide-react";
 
 export const metadata = {
-  title: "الماركات والعلامات التجارية المعتمدة | PharmaClick",
+  title: "الماركات والمختبرات المعتمدة | PharmaClick",
   description:
-    "استكشف أشهر العلامات التجارية العالمية والمحلية المعتمدة لمستحضرات العناية والصحة والجمال في PharmaClick مع توصيل لكافة الـ 69 ولاية في الجزائر.",
+    "تصفح أشهر الماركات والمختبرات العالمية والمحلية المعتمدة لمستحضرات العناية والصحة في الجزائر مع شحن سريع لـ 69 ولاية.",
 };
 
-export default function BrandsPage() {
+export default async function BrandsPage() {
+  let brandsList: BrandItemData[] = [];
+
+  // 1. محاولة جلب الماركات المعتمدة حياً من قاعدة بيانات MongoDB
+  if (process.env.MONGODB_URI) {
+    try {
+      await connectToDatabase();
+
+      const dbBrands = await Brand.find({ isActive: { $ne: false } })
+        .sort({ sortOrder: 1, name: 1 })
+        .lean();
+
+      if (dbBrands && dbBrands.length > 0) {
+        // حساب عدد منتجات كل ماركة عبر aggregation
+        const counts = await Product.aggregate([
+          { $match: { isOnlineVisible: { $ne: false } } },
+          { $group: { _id: "$brand", count: { $sum: 1 } } },
+        ]);
+
+        const countMap = new Map<string, number>();
+        counts.forEach((c) => {
+          if (c._id) {
+            countMap.set(c._id.toString(), c.count);
+          }
+        });
+
+        brandsList = dbBrands.map((b: any) => {
+          const pCount = countMap.get(b._id.toString()) || 0;
+          return {
+            _id: b._id.toString(),
+            name: b.name,
+            nameAr: b.nameAr || b.name,
+            nameFr: b.nameFr || "",
+            nameEn: b.nameEn || "",
+            slug: b.slug,
+            logoUrl: b.logoUrl || "/images/default-brand.webp",
+            description: b.description || "",
+            descriptionFr: b.descriptionFr || "",
+            descriptionEn: b.descriptionEn || "",
+            countryOfOrigin: b.countryOfOrigin || "",
+            countryOfOriginFr: b.countryOfOriginFr || "",
+            countryOfOriginEn: b.countryOfOriginEn || "",
+            isFeatured: Boolean(b.isFeatured),
+            productsCount: pCount,
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching brands from MongoDB:", err);
+    }
+  }
+
+  // 2. دمج أو استكمال بـ MOCK_BRANDS لضمان ثراء العرض دائماً
+  for (const mb of MOCK_BRANDS) {
+    const alreadyExists = brandsList.some(
+      (b) => b.slug === mb.slug || b._id === mb._id || b.name.toLowerCase() === mb.name.toLowerCase()
+    );
+    if (!alreadyExists) {
+      const pCount = MOCK_PRODUCTS.filter(
+        (p) => p.brandId === mb._id || p.brand.toLowerCase() === mb.name.toLowerCase()
+      ).length;
+
+      brandsList.push({
+        _id: mb._id,
+        name: mb.name,
+        nameAr: mb.nameAr || mb.name,
+        nameFr: mb.nameFr || "",
+        nameEn: mb.nameEn || "",
+        slug: mb.slug,
+        logoUrl: mb.logoUrl,
+        description: mb.description,
+        descriptionFr: mb.descriptionFr || "",
+        descriptionEn: mb.descriptionEn || "",
+        countryOfOrigin: mb.countryOfOrigin,
+        countryOfOriginFr: mb.countryOfOriginFr || "",
+        countryOfOriginEn: mb.countryOfOriginEn || "",
+        isFeatured: mb.isFeatured,
+        productsCount: pCount,
+      });
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Header />
-
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* مسار التنقل */}
-        <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
-          <Link href="/" className="hover:text-brand-deep transition-colors">
-            الرئيسية
-          </Link>
-          <ChevronLeft className="w-3.5 h-3.5 text-slate-400" />
-          <span className="font-bold text-brand-deep">الماركات المعتمدة</span>
-        </div>
-
-        {/* رأس الصفحة */}
-        <div className="bg-linear-to-l from-brand-deep to-brand-teal text-white p-6 sm:p-10 rounded-3xl mb-10 shadow-lg relative overflow-hidden">
-          <div className="max-w-2xl relative z-10">
-            <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold text-brand-lime mb-3">
-              <Award className="w-4 h-4" />
-              <span>شراكات ومخابر عالمية معتمدة</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl font-black mb-3 leading-tight">
-              أشهر الماركات الطبية والجلدية
-            </h1>
-            <p className="text-slate-100 text-xs sm:text-sm leading-relaxed font-medium">
-              نحن نوفر مستحضرات معتمدة 100% مباشرة من الوكلاء والمصنعين
-              الرسميين، لنضمن لك أعلى معايير الجودة والأمان لبشرتك وصحتك.
-            </p>
-          </div>
-        </div>
-
-        {/* شبكة الماركات */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {MOCK_BRANDS.map((brand) => {
-            const count = MOCK_PRODUCTS.filter(
-              (p) => p.brandId === brand._id,
-            ).length;
-
-            return (
-              <div
-                key={brand._id}
-                className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs hover:shadow-xl hover:border-brand-teal/40 transition-all duration-300 flex flex-col justify-between group"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-4 mb-4">
-                    <div className="w-20 h-12 bg-slate-50 rounded-xl p-2 border border-slate-100 flex items-center justify-center shrink-0">
-                      <img
-                        src={brand.logoUrl}
-                        alt={brand.name}
-                        className="max-h-full max-w-full object-contain filter group-hover:scale-105 transition-transform"
-                      />
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
-                      <Globe className="w-3 h-3 text-brand-teal" />
-                      <span>{brand.countryOfOrigin}</span>
-                    </span>
-                  </div>
-
-                  <h2 className="text-lg font-black text-slate-800 group-hover:text-brand-deep transition-colors mb-2">
-                    {brand.name}
-                  </h2>
-                  <p className="text-xs text-slate-500 leading-relaxed mb-4">
-                    {brand.description}
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-auto">
-                  <span className="text-xs text-slate-400 font-medium">
-                    {count} مستحضر معتمد
-                  </span>
-                  <Link
-                    href={`/brands/${brand.slug}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-teal hover:text-brand-deep transition-colors"
-                  >
-                    <span>استعراض المنتجات</span>
-                    <ChevronLeft className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </main>
-
+      <BrandsClientView brands={brandsList} />
       <Footer />
     </div>
   );

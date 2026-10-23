@@ -41,11 +41,7 @@ export default function AdminLoginPage() {
       if (res.ok && data?.success) {
         setSuccessMessage("تم التحقق بنجاح! جاري تحويلك إلى لوحة التحكم...");
         setTimeout(() => {
-          if (typeof window !== 'undefined' && window.location.host.startsWith('dash.')) {
-            router.push('/');
-          } else {
-            router.push('/admin');
-          }
+          router.push('/');
           router.refresh();
         }, 800);
       } else {

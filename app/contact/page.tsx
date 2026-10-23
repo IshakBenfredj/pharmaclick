@@ -5,93 +5,25 @@ import Link from "next/link";
 import {
   Phone,
   MessageCircle,
-  Mail,
   Clock,
   Truck,
   ShieldCheck,
   Send,
   CheckCircle2,
   ChevronLeft,
-  MapPin,
+  ChevronRight,
   Headphones,
+  AlertCircle,
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-
-// قائمة الـ 69 ولاية الجزائرية المعتمدة رسمياً
-const WILAYAS_LIST = [
-  "01 - أدرار",
-  "02 - الشلف",
-  "03 - الأغواط",
-  "04 - أم البواقي",
-  "05 - باتنة",
-  "06 - بجاية",
-  "07 - بسكرة",
-  "08 - بشار",
-  "09 - البليدة",
-  "10 - البويرة",
-  "11 - تمنراست",
-  "12 - تبسة",
-  "13 - تلمسان",
-  "14 - تيارت",
-  "15 - تيزي وزو",
-  "16 - الجزائر",
-  "17 - الجلفة",
-  "18 - جيجل",
-  "19 - سطيف",
-  "20 - سعيدة",
-  "21 - سكيكدة",
-  "22 - سيدي بلعباس",
-  "23 - عنابة",
-  "24 - قالمة",
-  "25 - قسنطينة",
-  "26 - المدية",
-  "27 - مستغانم",
-  "28 - المسيلة",
-  "29 - معسكر",
-  "30 - ورقلة",
-  "31 - وهران",
-  "32 - البيض",
-  "33 - إليزي",
-  "34 - برج بوعريريج",
-  "35 - بومرداس",
-  "36 - الطارف",
-  "37 - تندوف",
-  "38 - تسمسيلت",
-  "39 - الوادي",
-  "40 - خنشلة",
-  "41 - سوق أهراس",
-  "42 - تيبازة",
-  "43 - ميلة",
-  "44 - عين الدفلى",
-  "45 - النعامة",
-  "46 - عين تموشنت",
-  "47 - غرداية",
-  "48 - غليزان",
-  "49 - تيميمون",
-  "50 - برج باجي مختار",
-  "51 - أولاد جلال",
-  "52 - بني عباس",
-  "53 - عين صالح",
-  "54 - عين قزام",
-  "55 - تقرت",
-  "56 - جانت",
-  "57 - المغير",
-  "58 - المنيعة",
-  "59 - العريشة",
-  "60 - عين وسارة",
-  "61 - بوسعادة",
-  "62 - الأبيض سيدي الشيخ",
-  "63 - بريكة",
-  "64 - القنطرة",
-  "65 - مسعد",
-  "66 - شلغوم العيد",
-  "67 - أفلو",
-  "68 - قصر البخاري",
-  "69 - عين البيضاء",
-];
+import { useLanguage } from "@/context/LanguageContext";
+import { ALGERIA_WILAYAS } from "@/lib/constants/wilayas";
 
 export default function ContactPage() {
+  const { t, language, direction } = useLanguage();
+  const ChevronIcon = direction === "rtl" ? ChevronLeft : ChevronRight;
+
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
@@ -101,16 +33,31 @@ export default function ContactPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+
     if (!formData.fullName || !formData.phone || !formData.message) {
-      alert("يرجى ملء الاسم ورقم الهاتف ونص الرسالة.");
+      setErrorMessage(t("contactFormValidation"));
       return;
     }
+
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "حدث خطأ أثناء إرسال الرسالة");
+      }
+
       setIsSubmitted(true);
       setFormData({
         fullName: "",
@@ -119,56 +66,52 @@ export default function ContactPage() {
         subject: "",
         message: "",
       });
-    }, 1200);
+    } catch (err: any) {
+      setErrorMessage(err.message || "فشل إرسال الرسالة، يرجى المحاولة لاحقاً.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div
-      className="min-h-screen bg-[#f8fafc] flex flex-col font-sans"
-      dir="rtl"
-    >
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans">
       <Header />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* مسار التنقل */}
         <div className="flex items-center gap-2 text-xs text-slate-500 mb-6">
           <Link href="/" className="hover:text-brand-deep transition-colors">
-            الرئيسية
+            {t("home")}
           </Link>
-          <ChevronLeft className="w-3.5 h-3.5 text-slate-400" />
+          <ChevronIcon className="w-3.5 h-3.5 text-slate-400" />
           <span className="font-bold text-brand-deep">
-            اتصل بنا وخدمة العملاء
+            {t("contactBreadcrumb")}
           </span>
         </div>
 
         {/* رأس الصفحة الترحيبي */}
-        <div className="bg-linear-to-l from-brand-deep via-brand-teal to-brand-turquoise text-white p-6 sm:p-10 rounded-3xl mb-10 shadow-lg text-right relative overflow-hidden">
+        <div className="bg-linear-to-l from-brand-deep via-brand-teal to-brand-turquoise text-white p-6 sm:p-10 rounded-3xl mb-10 shadow-lg text-start relative overflow-hidden">
           <div className="max-w-2xl relative z-10 space-y-3">
             <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold text-brand-lime">
               <Headphones className="w-4 h-4" />
-              <span>فريق الدعم في خدمتكم دائماً</span>
+              <span>{t("contactSupportAlways")}</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-black leading-tight">
-              تواصل مع متجر PharmaClick
+              {t("contactHeroTitle")}
             </h1>
             <p className="text-slate-100 text-xs sm:text-sm leading-relaxed font-medium">
-              نسعد دائماً بالإجابة عن استفساراتكم ومساعدتكم في اختيار أفضل
-              مستحضرات العناية والتجميل المعتمدة، مع متابعة فورية لطلبياتكم في
-              جميع الولايات الـ 69.
+              {t("contactHeroDesc")}
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* العمود الأيمن: نموذج التواصل المباشر */}
-          <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs">
+          {/* العمود الأول: نموذج التواصل المباشر */}
+          <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs text-start">
             <h2 className="text-xl font-black text-brand-deep mb-2">
-              أرسل لنا رسالة مباشرة
+              {t("contactFormTitle")}
             </h2>
-            <p className="text-xs text-slate-500 mb-6">
-              املأ النموذج أدناه وسيقوم فريق الدعم بالرد عليك في أقرب وقت عبر
-              الهاتف أو البريد.
-            </p>
+            <p className="text-xs text-slate-500 mb-6">{t("contactFormSub")}</p>
 
             {isSubmitted ? (
               <div className="p-8 text-center bg-teal-50/60 border border-teal-100 rounded-2xl space-y-3 animate-in fade-in">
@@ -176,26 +119,32 @@ export default function ContactPage() {
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <h3 className="text-lg font-black text-brand-deep">
-                  تم إرسال رسالتك بنجاح!
+                  {t("contactSuccessTitle")}
                 </h3>
                 <p className="text-xs text-slate-600 max-w-md mx-auto">
-                  شكراً لتواصلك مع PharmaClick. تم استلام رسالتك وسيتواصل معك
-                  مستشار خدمة العملاء قريباً.
+                  {t("contactSuccessDesc")}
                 </p>
                 <button
                   type="button"
                   onClick={() => setIsSubmitted(false)}
                   className="mt-3 bg-brand-deep text-white text-xs font-bold px-6 py-2.5 rounded-full hover:bg-brand-teal transition-colors cursor-pointer"
                 >
-                  إرسال رسالة أخرى
+                  {t("contactSendAnother")}
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                {errorMessage && (
+                  <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      الاسم الكامل <span className="text-rose-500">*</span>
+                      {t("contactFullName")}{" "}
+                      <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -204,14 +153,15 @@ export default function ContactPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, fullName: e.target.value })
                       }
-                      placeholder="أدخل اسمك الكامل..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-brand-teal focus:bg-white transition-all"
+                      placeholder={t("contactFullNamePlaceholder")}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-brand-teal focus:bg-white transition-all text-start"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      رقم الهاتف <span className="text-rose-500">*</span>
+                      {t("contactPhone")}{" "}
+                      <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="tel"
@@ -222,7 +172,7 @@ export default function ContactPage() {
                         setFormData({ ...formData, phone: e.target.value })
                       }
                       placeholder="05 / 06 / 07 ..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 text-right focus:outline-none focus:border-brand-teal focus:bg-white transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-brand-teal focus:bg-white transition-all"
                     />
                   </div>
                 </div>
@@ -230,27 +180,32 @@ export default function ContactPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      الولاية (69 ولاية)
+                      {t("contactWilayaLabel")}
                     </label>
                     <select
                       value={formData.wilaya}
                       onChange={(e) =>
                         setFormData({ ...formData, wilaya: e.target.value })
                       }
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-brand-teal focus:bg-white transition-all"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-brand-teal focus:bg-white transition-all cursor-pointer text-start"
                     >
-                      <option value="">اختر ولايتك...</option>
-                      {WILAYAS_LIST.map((w, idx) => (
-                        <option key={idx} value={w}>
-                          {w}
-                        </option>
-                      ))}
+                      <option value="">{t("contactChooseWilaya")}</option>
+                      {ALGERIA_WILAYAS.map((w) => {
+                        const wilayaName =
+                          language === "ar" ? w.nameAr : w.nameFr;
+                        const formatted = `${String(w.code).padStart(2, "0")} - ${wilayaName}`;
+                        return (
+                          <option key={w.code} value={formatted}>
+                            {formatted}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      موضوع الاستفسار
+                      {t("contactSubject")}
                     </label>
                     <input
                       type="text"
@@ -258,15 +213,15 @@ export default function ContactPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, subject: e.target.value })
                       }
-                      placeholder="طلب منتج، متابعة شحن، استفسار..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-brand-teal focus:bg-white transition-all"
+                      placeholder={t("contactSubjectPlaceholder")}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-brand-teal focus:bg-white transition-all text-start"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    الرسالة أو تفاصيل الطلب{" "}
+                    {t("contactMessage")}{" "}
                     <span className="text-rose-500">*</span>
                   </label>
                   <textarea
@@ -276,8 +231,8 @@ export default function ContactPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, message: e.target.value })
                     }
-                    placeholder="اكتب استفسارك أو تفاصيل المنتجات التي تبحث عنها..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800 focus:outline-none focus:border-brand-teal focus:bg-white transition-all resize-none"
+                    placeholder={t("contactMessagePlaceholder")}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800 focus:outline-none focus:border-brand-teal focus:bg-white transition-all resize-none text-start"
                   />
                 </div>
 
@@ -288,27 +243,28 @@ export default function ContactPage() {
                 >
                   <Send className="w-4 h-4" />
                   <span>
-                    {isSubmitting ? "جاري الإرسال..." : "إرسال الرسالة الآن"}
+                    {isSubmitting
+                      ? t("contactSubmitting")
+                      : t("contactSendBtn")}
                   </span>
                 </button>
               </form>
             )}
           </div>
 
-          {/* العمود الأيسر: قنوات التواصل ومعلومات الخدمة */}
-          <div className="lg:col-span-5 space-y-4">
+          {/* العمود الثاني: قنوات التواصل ومعلومات الخدمة */}
+          <div className="lg:col-span-5 space-y-4 text-start">
             {/* بطاقة واتساب السريعة */}
-            <div className="bg-linear-to-br from-emerald-600 to-teal-700 text-white p-6 rounded-3xl shadow-md space-y-4 text-right">
+            <div className="bg-linear-to-br from-emerald-600 to-teal-700 text-white p-6 rounded-3xl shadow-md space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 className="text-lg font-black leading-tight">
-                  تواصل فوري عبر الواتساب
+                  {t("contactWhatsappTitle")}
                 </h3>
                 <p className="text-xs text-emerald-100 mt-1 leading-relaxed">
-                  احصل على رد سريع ومباشر من فريق الدعم للإجابة عن أسئلتكم
-                  ومساعدتكم في الطلب فوراً.
+                  {t("contactWhatsappDesc")}
                 </p>
               </div>
               <a
@@ -318,7 +274,7 @@ export default function ContactPage() {
                 className="inline-flex items-center gap-2 bg-white text-emerald-800 hover:bg-emerald-50 font-black text-xs px-6 py-3 rounded-full transition-all shadow-xs"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-600" />
-                <span>محادثة واتساب مباشرة</span>
+                <span>{t("contactWhatsappBtn")}</span>
               </a>
             </div>
 
@@ -330,7 +286,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-slate-400">
-                    الهاتف وخدمة الزبائن
+                    {t("contactPhoneTitle")}
                   </h4>
                   <a
                     href="tel:0541790205"
@@ -340,7 +296,7 @@ export default function ContactPage() {
                     0541 79 02 05
                   </a>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    متاح طوال أيام العمل الرسمية
+                    {t("contactPhoneAvail")}
                   </p>
                 </div>
               </div>
@@ -351,13 +307,13 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-slate-400">
-                    أوقات العمل والدعم
+                    {t("contactHoursTitle")}
                   </h4>
                   <p className="text-xs font-bold text-slate-800 mt-0.5">
-                    السبت - الخميس: 08:30 صباحاً إلى 20:30 مساءً
+                    {t("contactHoursVal")}
                   </p>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    الجمعة: خدمة العملاء متاحة عبر الواتساب
+                    {t("contactFridayVal")}
                   </p>
                 </div>
               </div>
@@ -368,13 +324,13 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-slate-400">
-                    نطاق التوصيل والشحن
+                    {t("contactCoverageTitle")}
                   </h4>
                   <p className="text-xs font-bold text-slate-800 mt-0.5">
-                    توصيل سريع وموثوق لكافة الـ 69 ولاية
+                    {t("contactCoverageVal")}
                   </p>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    الدفع عند الاستلام نقداً (COD) حتى باب المنزل
+                    {t("contactCoverageSub")}
                   </p>
                 </div>
               </div>
@@ -385,13 +341,13 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-slate-400">
-                    ضمان الجودة والأصالة
+                    {t("contactQualityTitle")}
                   </h4>
                   <p className="text-xs font-bold text-slate-800 mt-0.5">
-                    100% مستحضرات أصلية ومطابقة للمواصفات
+                    {t("contactQualityVal")}
                   </p>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    مستوردة ومعتمدة من الوكلاء والموزعين الرسميين
+                    {t("contactQualitySub")}
                   </p>
                 </div>
               </div>

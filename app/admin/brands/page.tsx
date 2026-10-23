@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState } from "react";
+import Link from "next/link";
 import {
   Award,
   Plus,
@@ -10,27 +10,27 @@ import {
   Tag,
   CheckCircle2,
   ExternalLink,
-} from 'lucide-react';
-import { MOCK_BRANDS, MockBrand } from '@/lib/data/mockData';
-import { FormLabelWithHelp } from '@/components/ui';
+} from "lucide-react";
+import { MOCK_BRANDS, MockBrand } from "@/lib/data/mockData";
+import { FormLabelWithHelp } from "@/components/ui";
 
 export default function AdminBrandsPage() {
   const [brands, setBrands] = useState<MockBrand[]>(MOCK_BRANDS);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // New brand form state
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
-  const [countryOfOrigin, setCountryOfOrigin] = useState('فرنسا (France)');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [countryOfOrigin, setCountryOfOrigin] = useState("فرنسا (France)");
+  const [description, setDescription] = useState("");
   const [isFeatured, setIsFeatured] = useState(true);
 
   const filteredBrands = brands.filter(
     (b) =>
       b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       b.countryOfOrigin.includes(searchTerm) ||
-      b.slug.includes(searchTerm)
+      b.slug.includes(searchTerm),
   );
 
   const handleAddBrand = (e: React.FormEvent) => {
@@ -40,17 +40,17 @@ export default function AdminBrandsPage() {
     const newBrand: MockBrand = {
       _id: `brand_${Date.now()}`,
       name,
-      slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
-      logoUrl: '/brands/laroche.png',
+      slug: slug || name.toLowerCase().replace(/\s+/g, "-"),
+      logoUrl: "/brands/laroche.png",
       description,
       countryOfOrigin,
       isFeatured,
     };
 
     setBrands([...brands, newBrand]);
-    setName('');
-    setSlug('');
-    setDescription('');
+    setName("");
+    setSlug("");
+    setDescription("");
     setIsAddModalOpen(false);
   };
 
@@ -60,24 +60,30 @@ export default function AdminBrandsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-            <Link href="/admin" className="hover:text-brand-deep transition-colors">
+            <Link
+              href="/admin"
+              className="hover:text-brand-deep transition-colors"
+            >
               لوحة التحكم
             </Link>
             <span>/</span>
-            <span className="text-slate-800 font-semibold">إدارة العلامات التجارية والمخابر</span>
+            <span className="text-slate-800 font-semibold">
+              إدارة العلامات التجارية والمخابر
+            </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3">
             <Award className="w-7 h-7 text-brand-deep" />
             العلامات التجارية المعتمدة ({brands.length})
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            إدارة الماركات، بلدان المنشأ، وشعارات المخابر المعتمدة المعروضة في المتجر.
+            إدارة الماركات، بلدان المنشأ، وشعارات المخابر المعتمدة المعروضة في
+            المتجر.
           </p>
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="px-5 py-3 rounded-2xl bg-gradient-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 self-start sm:self-auto"
+          className="px-5 py-3 rounded-2xl bg-linear-to-r from-brand-deep via-brand-teal to-brand-green text-white font-black text-sm shadow-md shadow-brand-deep/20 hover:opacity-95 transition-all inline-flex items-center gap-2 self-start sm:self-auto"
         >
           <Plus className="w-5 h-5" />
           <span>إضافة علامة تجارية</span>
@@ -122,11 +128,13 @@ export default function AdminBrandsPage() {
                 <Globe className="w-3.5 h-3.5 text-brand-teal" />
                 <span>{b.countryOfOrigin}</span>
               </p>
-              <span className="text-[11px] text-slate-400 font-mono block mt-1">/{b.slug}</span>
+              <span className="text-[11px] text-slate-400 font-mono block mt-1">
+                /{b.slug}
+              </span>
             </div>
 
             <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-              {b.description || 'مخبر معتمد يقدم حلولاً متطورة للعناية والصحة.'}
+              {b.description || "مخبر معتمد يقدم حلولاً متطورة للعناية والصحة."}
             </p>
           </div>
         ))}

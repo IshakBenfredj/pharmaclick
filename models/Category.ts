@@ -61,6 +61,8 @@ export interface ICategory extends Document {
   descriptionEn?: string;
   /** المعرف المرجعي للتصنيف الأب (إذا كان تصنيفاً فرعياً، null إذا كان قسماً رئيسياً) */
   parentCategory?: mongoose.Types.ObjectId | null;
+  /** التصنيفات الفرعية التابعة (Virtual Population) */
+  subCategories?: ICategory[];
   /** ترتيب الظهور في القوائم والواجهة */
   sortOrder: number;
   /** حالة التفعيل وظهور التصنيف للزوار */

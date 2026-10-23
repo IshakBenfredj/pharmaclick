@@ -31,43 +31,43 @@ interface AdminNavItem {
 const NAV_ITEMS: AdminNavItem[] = [
   {
     title: "نظرة عامة والإحصائيات",
-    href: "/admin",
+    href: "/",
     icon: LayoutDashboard,
   },
   {
     title: "إدارة المنتجات",
-    href: "/admin/products",
+    href: "/products",
     icon: Package,
   },
   {
     title: "الأقسام والتصنيفات",
-    href: "/admin/categories",
+    href: "/categories",
     icon: Layers,
   },
   {
     title: "العلامات التجارية",
-    href: "/admin/brands",
+    href: "/brands",
     icon: Award,
   },
   {
     title: "المحرك الترويجي",
-    href: "/admin/marketing",
+    href: "/marketing",
     icon: Sliders,
   },
   {
     title: "اللافتات الإعلانية",
-    href: "/admin/banners",
+    href: "/banners",
     icon: ImageIcon,
   },
   {
     title: "إدارة الطلبات",
-    href: "/admin/orders",
+    href: "/orders",
     icon: ShoppingBag,
     badge: "جديد",
   },
   {
     title: "إعدادات الشحن والتوصيل",
-    href: "/admin/shipping",
+    href: "/shipping",
     icon: Truck,
   },
 ];
@@ -83,8 +83,8 @@ export default function AdminLayout({
 
   // If login page, don't show the dashboard shell (sidebar, mobile header, etc.)
   const isLoginPage =
-    pathname === '/admin/login' ||
     pathname === '/login' ||
+    pathname === '/admin/login' ||
     Boolean(pathname && pathname.includes('login'));
 
   if (isLoginPage) {
@@ -97,7 +97,7 @@ export default function AdminLayout({
     } catch (e) {
       console.error("Logout error:", e);
     }
-    router.push("/admin/login");
+    router.push("/login");
     router.refresh();
   };
 
@@ -174,9 +174,12 @@ export default function AdminLayout({
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive =
-              item.href === "/admin"
-                ? pathname === "/admin"
-                : pathname.startsWith(item.href);
+              item.href === "/"
+                ? pathname === "/" || pathname === "/admin"
+                : pathname === item.href ||
+                  pathname === `/admin${item.href}` ||
+                  pathname.startsWith(`${item.href}/`) ||
+                  pathname.startsWith(`/admin${item.href}/`);
 
             return (
               <Link
@@ -210,9 +213,14 @@ export default function AdminLayout({
 
         {/* Quick View Public Store */}
         <div className="p-3 border-t border-slate-800/80">
-          <Link
-            href="/"
+          <a
+            href={
+              typeof window !== "undefined" && window.location.host.startsWith("dash.")
+                ? `${window.location.protocol}//${window.location.host.replace(/^dash\./, "")}`
+                : "/"
+            }
             target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center justify-between w-full p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 text-xs font-semibold text-slate-300 hover:text-white transition-colors border border-slate-700/60"
           >
             <div className="flex items-center gap-2">
@@ -220,7 +228,7 @@ export default function AdminLayout({
               <span>معاينة واجهة المتجر</span>
             </div>
             <ChevronLeft className="w-3.5 h-3.5 text-slate-500" />
-          </Link>
+          </a>
         </div>
 
         {/* User Profile & Logout */}
